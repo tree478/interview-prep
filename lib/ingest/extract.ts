@@ -1,5 +1,6 @@
 // SERVER-ONLY. Extraction adapter for MATCH-1a: fills extracted_json for pending jobs.
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { extractPosting } from '../ai/extractPosting';
 import type { RoleType } from '../types';
 
 export type Extractor = (job: {
@@ -9,10 +10,14 @@ export type Extractor = (job: {
   description: string;
 }) => Promise<{ extracted: unknown; dropped: string[]; roleType?: RoleType }>;
 
-// TODO(B-3): set to an adapter around extractPosting from '@/lib/ai/extractPosting' once merged.
-export const extractor: Extractor | null = null;
+// Adapter around Miranda's extractPosting (B-3). It already zod-validates and retries once;
+// errors throw. Only the validated extraction is ever saved.
+export const extractor: Extractor | null = async (job) => {
+  const { extraction, dropped } = await extractPosting(job);
+  return { extracted: extraction, dropped, roleType: extraction.roleType };
+};
 
-export const SKIP_MESSAGE = 'Extraction skipped: extractPosting (B-3) not on main yet';
+export const SKIP_MESSAGE = 'Extraction skipped: no extractor configured';
 const MAX_ATTEMPTS = 2;
 
 interface JobRow {
