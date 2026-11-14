@@ -128,6 +128,27 @@ export const umassResourceSchema = z.object({
 });
 export type UmassResource = z.infer<typeof umassResourceSchema>;
 
+export const gapsRequestSchema = z.object({
+  jobId: z.uuid(),
+});
+export type GapsRequest = z.infer<typeof gapsRequestSchema>;
+
+export const atsRequestSchema = z.object({
+  jobId: z.uuid(),
+});
+export type AtsRequest = z.infer<typeof atsRequestSchema>;
+
+export const gapSchema = z.object({
+  skill: z.string(),
+  resources: z.array(umassResourceSchema),
+});
+export type Gap = z.infer<typeof gapSchema>;
+
+export const gapsResponseSchema = z.object({
+  gaps: z.array(gapSchema),
+});
+export type GapsResponse = z.infer<typeof gapsResponseSchema>;
+
 export const atsReportSchema = z.object({
   missingSections: z.array(z.enum(["Education", "Experience", "Skills"])),
   // 0–1. Null when no job was given.
