@@ -1,0 +1,6 @@
+{
+  "crons": [
+    { "path": "/api/ingest/run", "schedule": "0 13 * * *" },
+    { "path": "/api/ingest/courses", "schedule": "0 12 * * *" }
+  ]
+}
