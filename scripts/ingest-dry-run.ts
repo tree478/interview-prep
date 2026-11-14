@@ -107,7 +107,6 @@ async function main() {
       source: p.source,
       external_id: p.external_id,
       company: p.company,
-      company_id: p.company_id,
       title: p.title,
       location: p.location,
       url: p.url,

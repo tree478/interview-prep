@@ -37,7 +37,6 @@ export async function fetchLever(company: CompanyRef): Promise<RawPosting[]> {
       source: 'lever' as const,
       external_id: String(p.id),
       company: company.name,
-      ...(company.id ? { company_id: company.id } : {}),
       title: p.text.trim(),
       location: p.categories?.location?.trim() || null,
       url: p.hostedUrl,

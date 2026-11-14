@@ -38,7 +38,6 @@ describe('fetchGreenhouse', () => {
       source: 'greenhouse',
       external_id: '12345',
       company: 'Acme',
-      company_id: 'c1',
       title: 'Software Engineer Intern',
       location: 'Boston, MA',
       url: 'https://boards.greenhouse.io/acme/jobs/12345',

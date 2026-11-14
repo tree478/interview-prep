@@ -10,7 +10,6 @@ export interface RawPosting {
   source: Source;
   external_id: string; // String(id) from the API
   company: string; // display name
-  company_id?: string; // DB id when known
   title: string;
   location: string | null;
   url: string;

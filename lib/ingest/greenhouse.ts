@@ -37,7 +37,6 @@ export async function fetchGreenhouse(company: CompanyRef): Promise<RawPosting[]
     source: 'greenhouse' as const,
     external_id: String(j.id),
     company: company.name,
-    ...(company.id ? { company_id: company.id } : {}),
     title: j.title.trim(),
     location: j.location?.name?.trim() || null,
     url: j.absolute_url,
