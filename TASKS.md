@@ -341,7 +341,7 @@ The order within each person's section is the build order.
   - Loops over pending/failed jobs in batches until **≥100 are extracted**, with a delay between batches for rate limits. Prints the top `dropped_skills` so we can decide whether to extend `skills.json`.
   - **Done when:** ≥100 extracted postings from ≥10 companies in the DB. Run this **by Sat 5 pm** so Miranda can test scoring.
 
-- [ ] **C-7 — CICS course sync `POST /api/ingest/courses`** · GAP-2, GAP-2a, GAP-2b, GAP-2c · depends on: B-1, B-2 (Gemini helper)
+- [x] **C-7 — CICS course sync `POST /api/ingest/courses`** · GAP-2, GAP-2a, GAP-2b, GAP-2c · depends on: B-1, B-2 (Gemini helper)
   - Fetch the course descriptions page (URL in PRD GAP-2), hash the content, and skip the parse if the hash is unchanged (log `unchanged: true`). Parse each course: code, title, instructors, prerequisites, description. Gemini tags skills from the canonical list. zod drops tags not on the list.
   - Sanity check: if the fetch/parse fails or returns <50% of last time's course count → keep the existing data, load `data/umass_resources.json` if the table is empty, and log the error. Courses missing from the page → `active=false` (never delete).
   - Log a `bot_runs` row with `kind: 'courses'` and `course_stats`.
