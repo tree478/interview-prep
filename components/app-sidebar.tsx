@@ -11,6 +11,7 @@ import {
   UserCircleIcon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
+import { SignOutButton } from "@/components/sign-out-button";
 
 const NAV = [
   { href: "/dashboard", label: "Job feed", icon: Briefcase01Icon },
@@ -64,6 +65,7 @@ function SidebarNav({ pathname }: { pathname: string | null }) {
           </Link>
         );
       })}
+      <SignOutButton />
     </nav>
   );
 }

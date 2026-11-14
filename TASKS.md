@@ -196,7 +196,7 @@ The order within each person's section is the build order.
   - Dashboard layout: sidebar/nav with Feed, Tracker, Profile, Bot activity, Interview. Use shadcn/ui.
   - **Done when:** every page route exists and renders mock data. `npm run build` passes.
 
-- [ ] **A-2 — Sign-up + log-in** · AUTH-1, AUTH-2 · depends on: setup (Supabase client)
+- [x] **A-2 — Sign-up + log-in** · AUTH-1, AUTH-2 · depends on: setup (Supabase client)
   - Sign-up form: full name, email, password. Client-side check that the email ends in `@umass.edu`, with an inline error. Miranda's DB trigger (B-1) enforces it server-side too.
   - Log-in form. Session persists (Supabase SSR cookies). Middleware redirects logged-out users from `/dashboard/**` to `/login`.
   - **Done when:** a `@umass.edu` user can sign up, log out and log back in. `test@gmail.com` is refused with a clear message.

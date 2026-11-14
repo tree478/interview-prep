@@ -9,6 +9,7 @@
 // lib/types.ts. If the backend sends a different shape than we expect, we get
 // a clear error here instead of a confusing crash deep inside a component.
 
+import { createBrowserClient } from "@supabase/ssr";
 import { z } from "zod";
 import {
   applicationSchema,
@@ -233,4 +234,76 @@ export function gradeAnswer(jobId: string, questionId: string, question: string,
     body: { jobId, action: "grade", questionId, question, answer },
     mock: interviewMock.feedback,
   });
+}
+
+// ---------------------------------------------------------------- auth (A-2)
+//
+// Auth is separate from USE_MOCKS: real Supabase sign-in turns on as soon as
+// the two public Supabase values are in .env.local, even while the data
+// routes are still mocked. Without them, sign-up/log-in are simulated so the
+// flow can still be clicked through.
+//
+// These two values are public on purpose (the NEXT_PUBLIC_ prefix ships them
+// to the browser). The publishable key only allows what row-level security
+// permits. Server-only secrets never appear in this file.
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+export const AUTH_ENABLED = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+
+// TODO(supabase): move to lib/supabase/client.ts once it exists (owner: Miranda).
+// createBrowserClient returns the same instance on every call in the browser,
+// and stores the session in cookies so the server (proxy.ts, API routes) sees it.
+function browserSupabase() {
+  return createBrowserClient(SUPABASE_URL!, SUPABASE_PUBLISHABLE_KEY!);
+}
+
+/** Turns Supabase's technical auth errors into messages a student can act on. */
+function friendlyAuthError(message: string): string {
+  if (/database error saving new user/i.test(message)) {
+    // Miranda's trigger raised: the email isn't @umass.edu.
+    return "Only @umass.edu email addresses can sign up.";
+  }
+  if (/invalid login credentials/i.test(message)) return "Email or password is incorrect.";
+  if (/email not confirmed/i.test(message)) return "Confirm your email first. Check your UMass inbox for the link.";
+  if (/already registered|already exists/i.test(message)) {
+    return "An account with this email already exists. Try logging in.";
+  }
+  if (/password/i.test(message)) return message; // e.g. Supabase's own password rules
+  return "Something went wrong. Please try again.";
+}
+
+export async function signUp(input: { fullName: string; email: string; password: string }) {
+  if (!AUTH_ENABLED) {
+    await sleep(MOCK_DELAY_MS);
+    return { needsEmailConfirmation: false };
+  }
+  const { data, error } = await browserSupabase().auth.signUp({
+    email: input.email.trim(),
+    password: input.password,
+    // The DB trigger copies full_name from here into the new profiles row.
+    options: { data: { full_name: input.fullName.trim() } },
+  });
+  if (error) throw new ApiError(friendlyAuthError(error.message));
+  // No session means the project requires clicking a confirmation email first.
+  return { needsEmailConfirmation: !data.session };
+}
+
+export async function signIn(input: { email: string; password: string }) {
+  if (!AUTH_ENABLED) {
+    await sleep(MOCK_DELAY_MS);
+    return;
+  }
+  const { error } = await browserSupabase().auth.signInWithPassword({
+    email: input.email.trim(),
+    password: input.password,
+  });
+  if (error) throw new ApiError(friendlyAuthError(error.message));
+}
+
+export async function signOut() {
+  if (!AUTH_ENABLED) return;
+  const { error } = await browserSupabase().auth.signOut();
+  if (error) throw new ApiError("Could not log out. Please try again.");
 }
