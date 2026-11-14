@@ -487,8 +487,43 @@ describe("scoreMatch", () => {
     );
   });
 
-  it("ignores hourly pay and applies a yearly minimum, including an unstated interval", () => {
-    const hourly = score({
+  it("skips location when the student lists no places and is not open to relocation", () => {
+    const skipped = score({
+      studentSkills: ["Python"],
+      preferredLocations: ["  "],
+      posting: posting({
+        requiredSkills: ["Python"],
+        locations: ["New York"],
+        remote: true,
+      }),
+    });
+    const relocating = score({
+      studentSkills: ["Python"],
+      openToRelocation: true,
+      preferredLocations: [],
+      posting: posting({
+        requiredSkills: ["Python"],
+        locations: ["New York"],
+      }),
+    });
+
+    expect(skipped.checks).toEqual([]);
+    expect(skipped.score).toBe(100);
+    expect(relocating.checks).toEqual([
+      { name: "location", passed: true, detail: "Open to relocation" },
+    ]);
+  });
+
+  it("annualizes hourly pay at 2080 hours and compares yearly pay as stated", () => {
+    const hourlyMeets = score({
+      studentSkills: ["Python"],
+      minPay: 80000,
+      posting: posting({
+        requiredSkills: ["Python"],
+        pay: { min: 40, max: 50, interval: "hour" },
+      }),
+    });
+    const hourlyBelow = score({
       studentSkills: ["Python"],
       minPay: 100000,
       posting: posting({
@@ -508,7 +543,6 @@ describe("scoreMatch", () => {
         pay: { min: 100000, max: 110000, interval: "year" },
       }),
     });
-
     const monthly = score({
       minPay: 50000,
       posting: posting({
@@ -516,8 +550,16 @@ describe("scoreMatch", () => {
       }),
     });
 
-    expect(hourly.checks).toEqual([]);
-    expect(hourly.score).toBe(100);
+    // 40 * 2080 = 83200, which clears 80000 and misses 100000.
+    // No preferred skills: 0.7R + 0.3Q. R = 1, Q = 0 → 70.
+    expect(hourlyMeets.checks).toEqual([
+      { name: "pay", passed: true, detail: "Pay meets minimum" },
+    ]);
+    expect(hourlyMeets.score).toBe(100);
+    expect(hourlyBelow.score).toBe(70);
+    expect(hourlyBelow.checks).toEqual([
+      { name: "pay", passed: false, detail: "Pay is below your minimum" },
+    ]);
     expect(monthly.checks).toEqual([]);
     expect(yearly.checks).toEqual([
       { name: "pay", passed: true, detail: "Pay meets minimum" },

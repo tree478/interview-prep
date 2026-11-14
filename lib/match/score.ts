@@ -7,6 +7,8 @@ import type {
 } from "../types";
 import { canonicalize } from "./skills";
 
+const HOURS_PER_YEAR = 2080;
+
 export type ScoreMatchInput = {
   studentSkills: string[];
   year: string | null;
@@ -114,7 +116,10 @@ function requirementChecks(input: ScoreMatchInput): RequirementCheck[] {
   const graduation = graduationCheck(input.year, posting);
   if (graduation) checks.push(graduation);
 
-  if (locationApplies(posting, input.jobLocation)) {
+  if (
+    hasLocationPreference(input) &&
+    locationApplies(posting, input.jobLocation)
+  ) {
     checks.push(locationCheck(input));
   }
 
@@ -187,6 +192,11 @@ function graduationWindow(startYear: number | null, endYear: number | null): str
   return `${endYear} or earlier`;
 }
 
+function hasLocationPreference(input: ScoreMatchInput): boolean {
+  if (input.openToRelocation) return true;
+  return input.preferredLocations.some((place) => place.trim() !== "");
+}
+
 function locationApplies(
   posting: PostingExtraction,
   jobLocation: string | null,
@@ -257,23 +267,23 @@ function sponsorshipCheck(
   };
 }
 
+function yearlyAmount(pay: NonNullable<PostingExtraction["pay"]>): number | null {
+  if (pay.min == null || !Number.isFinite(pay.min)) return null;
+  if (pay.interval === "year" || pay.interval === null) return pay.min;
+  if (pay.interval === "hour") return pay.min * HOURS_PER_YEAR;
+  return null;
+}
+
 function payCheck(
   minPay: number | null,
   posting: PostingExtraction,
 ): RequirementCheck | null {
   const pay = posting.pay;
-  if (
-    minPay == null ||
-    !Number.isFinite(minPay) ||
-    pay == null ||
-    pay.min == null ||
-    !Number.isFinite(pay.min) ||
-    (pay.interval !== "year" && pay.interval !== null)
-  ) {
-    return null;
-  }
+  if (minPay == null || !Number.isFinite(minPay) || pay == null) return null;
+  const yearly = yearlyAmount(pay);
+  if (yearly == null) return null;
 
-  const passed = pay.min >= minPay;
+  const passed = yearly >= minPay;
   return {
     name: "pay",
     passed,

@@ -1,6 +1,6 @@
 import { scoreMatch } from "@/lib/match/score";
 import { createClient } from "@/lib/supabase/server";
-import { postingExtractionSchema } from "@/lib/types";
+import { matchRefreshSchema, postingExtractionSchema } from "@/lib/types";
 
 function jsonError(error: string, status: number): Response {
   return Response.json({ error }, { status });
@@ -104,7 +104,9 @@ export async function POST(): Promise<Response> {
       });
     }
 
-    if (rows.length === 0) return Response.json({ updated: 0 });
+    if (rows.length === 0) {
+      return Response.json(matchRefreshSchema.parse({ updated: 0 }));
+    }
 
     const { data, error } = await supabase
       .from("matches")
@@ -113,7 +115,9 @@ export async function POST(): Promise<Response> {
     if (error || !Array.isArray(data)) {
       return jsonError("Could not save matches", 500);
     }
-    return Response.json({ updated: data.length });
+    const body = matchRefreshSchema.safeParse({ updated: data.length });
+    if (!body.success) return jsonError("Could not save matches", 500);
+    return Response.json(body.data);
   } catch {
     return jsonError("Could not score jobs", 500);
   }

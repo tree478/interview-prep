@@ -2,6 +2,7 @@ import { AIError } from "@/lib/ai/gemini";
 import { extractTextFromPdf, parseResume } from "@/lib/resume/parse";
 import { buildAtsReport } from "@/lib/resume/sections";
 import { createClient } from "@/lib/supabase/server";
+import { resumeUploadSchema } from "@/lib/types";
 
 export const maxDuration = 30;
 
@@ -94,5 +95,7 @@ export async function POST(request: Request): Promise<Response> {
     return jsonError("Could not save resume", 500);
   }
 
-  return Response.json({ resumeId: row.id, parsed, ats });
+  const body = resumeUploadSchema.safeParse({ resumeId: row.id, parsed, ats });
+  if (!body.success) return jsonError("Could not save resume", 500);
+  return Response.json(body.data);
 }

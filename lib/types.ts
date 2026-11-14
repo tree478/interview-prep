@@ -106,6 +106,11 @@ export const matchResultSchema = z.object({
 });
 export type MatchResult = z.infer<typeof matchResultSchema>;
 
+export const matchRefreshSchema = z.object({
+  updated: z.number().int().nonnegative(),
+});
+export type MatchRefresh = z.infer<typeof matchRefreshSchema>;
+
 export const feedItemSchema = z.object({
   job: jobSummarySchema,
   match: matchResultSchema,
@@ -158,6 +163,11 @@ export const tailorPatchSchema = z.object({
 });
 export type TailorPatch = z.infer<typeof tailorPatchSchema>;
 
+export const okSchema = z.object({
+  ok: z.literal(true),
+});
+export type Ok = z.infer<typeof okSchema>;
+
 export const gapSchema = z.object({
   skill: z.string(),
   resources: z.array(umassResourceSchema),
@@ -181,6 +191,13 @@ export const atsReportSchema = z.object({
   ),
 });
 export type AtsReport = z.infer<typeof atsReportSchema>;
+
+export const resumeUploadSchema = z.object({
+  resumeId: z.uuid(),
+  parsed: parsedResumeSchema,
+  ats: atsReportSchema,
+});
+export type ResumeUpload = z.infer<typeof resumeUploadSchema>;
 
 export const bulletDiffSchema = z.object({
   id: z.string(),
@@ -244,6 +261,11 @@ export const botRunSchema = z.object({
   errors: z.array(z.string()),
 });
 export type BotRun = z.infer<typeof botRunSchema>;
+
+export const runIdSchema = z.object({
+  runId: z.uuid(),
+});
+export type RunId = z.infer<typeof runIdSchema>;
 
 export const interviewQuestionSchema = z.object({
   id: z.string(),

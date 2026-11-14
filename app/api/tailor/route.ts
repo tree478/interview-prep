@@ -9,6 +9,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import {
   bulletDiffSchema,
+  okSchema,
   postingExtractionSchema,
   tailorPatchSchema,
   tailorRequestSchema,
@@ -221,7 +222,7 @@ export async function PATCH(request: Request): Promise<Response> {
       .maybeSingle();
     if (updateError || !updated) return jsonError("Could not save decisions", 500);
 
-    return Response.json({ ok: true });
+    return Response.json(okSchema.parse({ ok: true }));
   } catch {
     return jsonError("Could not save decisions", 500);
   }
