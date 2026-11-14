@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Stripe",
+    "source": "greenhouse",
+    "slug": "stripe"
+  },
+  {
+    "name": "Databricks",
+    "source": "greenhouse",
+    "slug": "databricks"
+  },
+  {
+    "name": "Robinhood",
+    "source": "greenhouse",
+    "slug": "robinhood"
+  },
+  {
+    "name": "Figma",
+    "source": "greenhouse",
+    "slug": "figma"
+  },
+  {
+    "name": "Airbnb",
+    "source": "greenhouse",
+    "slug": "airbnb"
+  },
+  {
+    "name": "Cloudflare",
+    "source": "greenhouse",
+    "slug": "cloudflare"
+  },
+  {
+    "name": "Datadog",
+    "source": "greenhouse",
+    "slug": "datadog"
+  },
+  {
+    "name": "Pinterest",
+    "source": "greenhouse",
+    "slug": "pinterest"
+  },
+  {
+    "name": "Lyft",
+    "source": "greenhouse",
+    "slug": "lyft"
+  },
+  {
+    "name": "Duolingo",
+    "source": "greenhouse",
+    "slug": "duolingo"
+  },
+  {
+    "name": "Roblox",
+    "source": "greenhouse",
+    "slug": "roblox"
+  },
+  {
+    "name": "MongoDB",
+    "source": "greenhouse",
+    "slug": "mongodb"
+  },
+  {
+    "name": "Samsara",
+    "source": "greenhouse",
+    "slug": "samsara"
+  },
+  {
+    "name": "Affirm",
+    "source": "greenhouse",
+    "slug": "affirm"
+  },
+  {
+    "name": "Coinbase",
+    "source": "greenhouse",
+    "slug": "coinbase"
+  },
+  {
+    "name": "Scale AI",
+    "source": "greenhouse",
+    "slug": "scaleai"
+  },
+  {
+    "name": "Brex",
+    "source": "greenhouse",
+    "slug": "brex"
+  },
+  {
+    "name": "Rubrik",
+    "source": "greenhouse",
+    "slug": "rubrik"
+  },
+  {
+    "name": "Appian",
+    "source": "greenhouse",
+    "slug": "appian"
+  },
+  {
+    "name": "Twitch",
+    "source": "greenhouse",
+    "slug": "twitch"
+  },
+  {
+    "name": "Palantir",
+    "source": "lever",
+    "slug": "palantir"
+  },
+  {
+    "name": "Spotify",
+    "source": "lever",
+    "slug": "spotify"
+  },
+  {
+    "name": "Zoox",
+    "source": "lever",
+    "slug": "zoox"
+  },
+  {
+    "name": "Veeva",
+    "source": "lever",
+    "slug": "veeva"
+  }
+]
