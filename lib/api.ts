@@ -19,13 +19,17 @@ import {
   feedItemSchema,
   gapsResponseSchema,
   interviewQuestionSchema,
-  parsedResumeSchema,
+  matchRefreshSchema,
+  okSchema,
   profileRowSchema,
+  resumeUploadSchema,
+  runIdSchema,
   starFeedbackSchema,
   tailorResultSchema,
   type RoleType,
   type Sponsorship,
   type Stage,
+  type TailorDecision,
 } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 
@@ -40,19 +44,8 @@ import tailorMock from "@/mocks/tailor.json";
 // Mocks are on unless someone explicitly turns them off.
 export const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS !== "false";
 
-// Route response wrappers. These compose the shared schemas from lib/types.ts
-// into the exact response shapes listed in TASKS.md §2.
-// TODO(types): ask Miranda to move these into lib/types.ts
-// (resumeUploadSchema, okSchema, runIdSchema, matchRefreshSchema).
-const resumeUploadSchema = z.object({
-  resumeId: z.string(),
-  parsed: parsedResumeSchema,
-  ats: atsReportSchema,
-});
-
-const okSchema = z.object({ ok: z.literal(true) });
-const runIdSchema = z.object({ runId: z.string() });
-const matchRefreshSchema = z.object({ updated: z.number() });
+// Mock id for the bot buttons. lib/types.ts requires run ids to be UUIDs.
+const MOCK_RUN = { runId: "00000000-0000-4000-8000-0000000000b1" };
 
 /** Thrown when a request fails. `message` is safe to show to the user. */
 export class ApiError extends Error {
@@ -183,7 +176,7 @@ export function tailor(jobId: string) {
 
 export function saveTailorDecisions(
   tailoringId: string,
-  decisions: { id: string; status: "accepted" | "rejected" }[],
+  decisions: TailorDecision[],
 ) {
   return call(okSchema, "/api/tailor", {
     method: "PATCH",
@@ -216,12 +209,12 @@ export function runScout() {
   return call(runIdSchema, "/api/ingest/run", {
     method: "POST",
     body: { trigger: "manual" },
-    mock: { runId: "run-mock" },
+    mock: MOCK_RUN,
   });
 }
 
 export function refreshCourses() {
-  return call(runIdSchema, "/api/ingest/courses", { method: "POST", mock: { runId: "run-mock" } });
+  return call(runIdSchema, "/api/ingest/courses", { method: "POST", mock: MOCK_RUN });
 }
 
 // ---------------------------------------------------------------- interview
