@@ -4,7 +4,7 @@ import { botRunSchema } from '../types';
 import { secretAuth } from './auth';
 import { toBotRun } from './botRuns';
 import { extractPending, isRateLimitError, type Extractor } from './extract';
-import { runScout, type ScoutDeps } from './runScout';
+import { FILTER_BUDGET_MS, runScout, type ScoutDeps } from './runScout';
 
 // Minimal in-memory fake of the supabase query builder used by the pipeline.
 type Row = Record<string, any>;
@@ -139,6 +139,38 @@ describe('runScout', () => {
     f.tables.bot_runs[0].jobs_added = -1;
     await runScout('r1', deps);
     expect(f.tables.bot_runs[0].jobs_added).toBe(0);
+  });
+
+  it('gives the role filter about 25s from the start of the run', async () => {
+    const { deps } = setup();
+    const start = Date.now();
+    let seen: number | undefined;
+    deps.filterRoles = async (ps, opts) => {
+      seen = opts?.deadline;
+      return {
+        roleTypes: ps.map((p) => (/intern/i.test(p.title) ? 'internship' : 'other')),
+        usedFallback: false,
+        errors: [],
+      };
+    };
+    await runScout('r1', deps);
+    expect(seen).toBeDefined();
+    const delta = seen! - start;
+    expect(delta).toBeGreaterThanOrEqual(FILTER_BUDGET_MS);
+    expect(delta).toBeLessThan(FILTER_BUDGET_MS + 1_000);
+  });
+
+  it('still writes the bot_runs row when the pipeline throws', async () => {
+    const { f, deps } = setup();
+    deps.selectCompanies = async () => {
+      throw new Error('db down');
+    };
+    await runScout('r1', deps);
+    expect(f.tables.bot_runs[0]).toMatchObject({
+      status: 'failed',
+      finished_at: '2026-11-14T00:00:00.000Z',
+    });
+    expect(f.tables.bot_runs[0].errors).toContain('Run failed: db down');
   });
 });
 

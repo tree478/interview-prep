@@ -81,6 +81,17 @@ function compareResources(a: GapResourceRow, b: GapResourceRow): number {
   return a.name.localeCompare(b.name);
 }
 
+function hasFaculty(row: GapResourceRow): boolean {
+  return readFaculty(row.meta.faculty) !== undefined;
+}
+
+function pickResources(rows: GapResourceRow[]): GapResourceRow[] {
+  const facultyLab = rows.find((row) => row.type === "lab" && hasFaculty(row));
+  if (!facultyLab) return rows.slice(0, MAX_RESOURCES);
+  const rest = rows.filter((row) => row !== facultyLab);
+  return [...rest.slice(0, MAX_RESOURCES - 1), facultyLab].sort(compareResources);
+}
+
 export function selectGaps(input: {
   missingSkills: string[];
   preferredMissing: string[];
@@ -88,10 +99,10 @@ export function selectGaps(input: {
 }): Gap[] {
   return orderedSkills(input.missingSkills, input.preferredMissing).map((skill) => ({
     skill,
-    resources: input.resources
-      .filter((row) => row.active === true && row.skills.includes(skill))
-      .sort(compareResources)
-      .slice(0, MAX_RESOURCES)
-      .map(toResource),
+    resources: pickResources(
+      input.resources
+        .filter((row) => row.active === true && row.skills.includes(skill))
+        .sort(compareResources),
+    ).map(toResource),
   }));
 }

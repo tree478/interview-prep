@@ -91,6 +91,68 @@ describe("selectGaps", () => {
     ]);
   });
 
+  it("reserves one slot for a faculty lab when three or more courses match", () => {
+    const faculty = [{ name: "Jane Doe", profile_url: "https://example.edu/jane" }];
+    const gaps = selectGaps({
+      missingSkills: ["Machine learning"],
+      preferredMissing: [],
+      resources: [
+        resource({ id: "gamma", name: "Gamma", skills: ["Machine learning"] }),
+        resource({ id: "alpha", name: "Alpha", skills: ["Machine learning"] }),
+        resource({ id: "delta", name: "Delta", skills: ["Machine learning"] }),
+        resource({ id: "beta", name: "Beta", skills: ["Machine learning"] }),
+        resource({
+          id: "other-lab",
+          type: "lab",
+          name: "AAA Lab",
+          skills: ["Machine learning"],
+        }),
+        resource({
+          id: "zebra",
+          type: "lab",
+          name: "Zebra Lab",
+          skills: ["Machine learning"],
+          meta: { faculty },
+        }),
+        resource({
+          id: "binds",
+          type: "lab",
+          name: "BINDS Lab",
+          skills: ["Machine learning"],
+          meta: { faculty },
+        }),
+      ],
+    });
+
+    expect(gaps[0]?.resources.map((item) => [item.type, item.id])).toEqual([
+      ["course", "alpha"],
+      ["course", "beta"],
+      ["lab", "binds"],
+    ]);
+    expect(gaps[0]?.resources[2]).toMatchObject({ faculty });
+  });
+
+  it("does not drop a course for a lab that lists no faculty", () => {
+    const gaps = selectGaps({
+      missingSkills: ["Statistics"],
+      preferredMissing: [],
+      resources: [
+        resource({ id: "c", name: "C", skills: ["Statistics"] }),
+        resource({ id: "a", name: "A", skills: ["Statistics"] }),
+        resource({ id: "b", name: "B", skills: ["Statistics"] }),
+        resource({
+          id: "lab",
+          type: "lab",
+          name: "Stats Lab",
+          skills: ["Statistics"],
+          meta: { faculty: [] },
+        }),
+      ],
+    });
+
+    expect(gaps[0]?.resources.map((item) => item.id)).toEqual(["a", "b", "c"]);
+  });
+
   it("excludes inactive resources", () => {
     const gaps = selectGaps({
       missingSkills: ["Statistics"],

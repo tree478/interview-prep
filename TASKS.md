@@ -290,13 +290,13 @@ The order within each person's section is the build order.
   - Reuse `missingSections` from the latest resume. Keyword coverage = the share of the posting's canonical skills (required + preferred) found in the resume raw text via `canonicalize`. Flag `low_keyword_coverage` below 50% (tunable constant). Wording: "possible issue".
   - **Done when:** the demo resume (no Skills section) returns a missing_section issue.
 
-- [ ] **B-8 — Number normalization + fabrication check + tests** · TAILOR-3, TAILOR-3a · depends on: B-2
+- [x] **B-8 — Number normalization + fabrication check + tests** · TAILOR-3, TAILOR-3a · depends on: B-2
   - `lib/resume/numbers.ts` exactly per TAILOR-3a (commas, written numbers to 999,999 incl. hyphenated and "a dozen", k/m/b, percent/%, ranges split, vague quantities as claims, don't convert "one"/"a"/ordinals).
   - `lib/resume/fabrication.ts`: `checkBullet(original, rewritten, knownEmployers) → { ok; reasons[] }`. Reject if the rewrite has any canonical skill, employer name or normalized number not in **that same original bullet**.
   - **≥20 before/after unit tests** (PRD requirement), including "increased sales by 40%" added from nothing, "5k"↔"5000" being OK, a skill moved from another bullet being rejected.
   - **Done when:** `npm test` is green with ≥20 cases.
 
-- [ ] **B-9 — `POST /api/tailor` + `PATCH /api/tailor`** · TAILOR-1, TAILOR-2, TAILOR-3 · depends on: B-8, B-3
+- [x] **B-9 — `POST /api/tailor` + `PATCH /api/tailor`** · TAILOR-1, TAILOR-2, TAILOR-3 · depends on: B-8, B-3
   - Gemini rewrites **existing bullets only** to emphasize the posting's skills the student already has (prompt + zod schema returns one rewrite per input bullet id). Run `checkBullet` on each. On fail, retry that bullet once, then drop it into `blocked` with the reason. Save a `tailorings` row (`bullet_diffs`, `rejected_count`). Under 15 s (batch all bullets in one call).
   - PATCH saves accept/reject decisions into `bullet_diffs`.
   - **Done when:** running on the demo posting returns diffs, at least one fabrication is caught in testing, and decisions persist.
@@ -323,7 +323,7 @@ The order within each person's section is the build order.
   - `lib/ingest/dedupe.ts`: skip if (`source`, `external_id`) exists. Also skip if normalized (title + company + location) exists (lowercase, collapse whitespace, strip punctuation).
   - **Done when:** a dry-run script prints counts per company, and re-running adds 0 duplicates.
 
-- [ ] **C-4 — Grok client + company selection + role filter** · JOB-3, JOB-3a, NFR Privacy · depends on: C-3
+- [x] **C-4 — Grok client + company selection + role filter** · JOB-3, JOB-3a, NFR Privacy · depends on: C-3
   - `lib/ingest/grok.ts`: xAI API call with JSON output + zod + one retry (same pattern as Miranda's Gemini helper, your own file).
   - `selectCompanies()`: input = companies table (name, source, last_checked_at, last_postings_found) + Miranda's aggregate save/apply counts. **No resume text, no user ids.** Output = up to 10 `{ company, reason }`. Then force-add any company not checked in 3+ days. On Grok failure/invalid JSON → fall back to the 10 least recently checked, mark `fallback: true` and log an error.
   - `filterRoles(postings)`: Grok labels each title/location as `internship` / `new_grad` / `other`. Keep internship + new_grad. Batch titles only (cheap). On failure, fall back to a keyword filter (intern, co-op, new grad, entry level, university, graduate).

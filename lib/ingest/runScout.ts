@@ -15,6 +15,7 @@ export interface ScoutDeps {
   };
   filterRoles: (
     postings: { title: string; location: string | null }[],
+    opts?: { deadline?: number },
   ) => Promise<{ roleTypes: RoleType[]; usedFallback: boolean; errors: string[] }>;
   extractor: Extractor | null;
   now: () => Date;
@@ -29,9 +30,13 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export const RUN_BUDGET_MS = 50_000;
+/** Role filter stops here so extraction and the final bot_runs update still fit in the 50 s budget. */
+export const FILTER_BUDGET_MS = 25_000;
 
 export async function runScout(runId: string, deps: ScoutDeps): Promise<void> {
-  const deadline = deps.deadline ?? Date.now() + RUN_BUDGET_MS;
+  const started = Date.now();
+  const deadline = deps.deadline ?? started + RUN_BUDGET_MS;
+  const filterDeadline = Math.min(deadline, started + FILTER_BUDGET_MS);
   const { db } = deps;
   const errors: string[] = [];
   let selected: SelectedCompany[] = [];
@@ -39,6 +44,7 @@ export async function runScout(runId: string, deps: ScoutDeps): Promise<void> {
   let jobsAdded = 0;
   let jobsExtracted = 0;
 
+  let status: 'done' | 'failed' = 'done';
   try {
     const sel = await deps.selectCompanies(db);
     selected = sel.selected;
@@ -69,7 +75,10 @@ export async function runScout(runId: string, deps: ScoutDeps): Promise<void> {
       }
     }
 
-    const roles = await deps.filterRoles(fetched.map((p) => ({ title: p.title, location: p.location })));
+    const roles = await deps.filterRoles(
+      fetched.map((p) => ({ title: p.title, location: p.location })),
+      { deadline: filterDeadline },
+    );
     // one message per distinct failure, not one per 100-posting chunk
     errors.push(...new Set(roles.errors));
     const kept: { p: RawPosting; role: RoleType }[] = [];
@@ -116,11 +125,12 @@ export async function runScout(runId: string, deps: ScoutDeps): Promise<void> {
         .eq('id', c.id);
       if (error) errors.push(`update company ${c.id}: ${error.message}`);
     }
-
-    await finish('done');
   } catch (e) {
+    status = 'failed';
     errors.push(`Run failed: ${msg(e)}`);
-    await finish('failed');
+  } finally {
+    // Always attempt this, including when the pipeline throws. A missed update leaves the row running.
+    await finish(status);
   }
 
   async function finish(status: 'done' | 'failed') {

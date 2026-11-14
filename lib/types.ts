@@ -17,6 +17,9 @@ export type RoleType = z.infer<typeof roleTypeSchema>;
 export const sponsorshipSchema = z.enum(["yes", "no", "unknown"]);
 export type Sponsorship = z.infer<typeof sponsorshipSchema>;
 
+export const payIntervalSchema = z.enum(["hour", "month", "year"]);
+export type PayInterval = z.infer<typeof payIntervalSchema>;
+
 const clubSchema = z.object({
   name: z.string(),
   role: z.string().nullable(),
@@ -75,7 +78,7 @@ export const postingExtractionSchema = z.object({
     .object({
       min: z.number().nullable(),
       max: z.number().nullable(),
-      interval: z.enum(["hour", "year"]).nullable(),
+      interval: payIntervalSchema.nullable(),
     })
     .nullable(),
   roleType: roleTypeSchema,
@@ -102,6 +105,11 @@ export const matchResultSchema = z.object({
   hardMismatch: z.string().nullable(),
 });
 export type MatchResult = z.infer<typeof matchResultSchema>;
+
+export const matchRefreshSchema = z.object({
+  updated: z.number().int().nonnegative(),
+});
+export type MatchRefresh = z.infer<typeof matchRefreshSchema>;
 
 export const feedItemSchema = z.object({
   job: jobSummarySchema,
@@ -138,6 +146,28 @@ export const atsRequestSchema = z.object({
 });
 export type AtsRequest = z.infer<typeof atsRequestSchema>;
 
+export const tailorRequestSchema = z.object({
+  jobId: z.uuid(),
+});
+export type TailorRequest = z.infer<typeof tailorRequestSchema>;
+
+export const tailorDecisionSchema = z.object({
+  id: z.string().min(1),
+  status: z.enum(["accepted", "rejected"]),
+});
+export type TailorDecision = z.infer<typeof tailorDecisionSchema>;
+
+export const tailorPatchSchema = z.object({
+  tailoringId: z.uuid(),
+  decisions: z.array(tailorDecisionSchema).min(1),
+});
+export type TailorPatch = z.infer<typeof tailorPatchSchema>;
+
+export const okSchema = z.object({
+  ok: z.literal(true),
+});
+export type Ok = z.infer<typeof okSchema>;
+
 export const gapSchema = z.object({
   skill: z.string(),
   resources: z.array(umassResourceSchema),
@@ -161,6 +191,13 @@ export const atsReportSchema = z.object({
   ),
 });
 export type AtsReport = z.infer<typeof atsReportSchema>;
+
+export const resumeUploadSchema = z.object({
+  resumeId: z.uuid(),
+  parsed: parsedResumeSchema,
+  ats: atsReportSchema,
+});
+export type ResumeUpload = z.infer<typeof resumeUploadSchema>;
 
 export const bulletDiffSchema = z.object({
   id: z.string(),
@@ -224,6 +261,11 @@ export const botRunSchema = z.object({
   errors: z.array(z.string()),
 });
 export type BotRun = z.infer<typeof botRunSchema>;
+
+export const runIdSchema = z.object({
+  runId: z.uuid(),
+});
+export type RunId = z.infer<typeof runIdSchema>;
 
 export const interviewQuestionSchema = z.object({
   id: z.string(),
@@ -337,6 +379,7 @@ export const jobRowSchema = z.object({
   ingested_by_run_id: z.uuid().nullable(),
   role_type: roleTypeSchema.nullable(),
   extraction_attempts: z.number().int(),
+  created_at: z.string(),
 });
 export type JobRow = z.infer<typeof jobRowSchema>;
 
