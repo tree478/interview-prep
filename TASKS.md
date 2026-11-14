@@ -318,7 +318,7 @@ The order within each person's section is the build order.
   - `scripts/seed-companies.ts` upserts into `companies`.
   - **Done when:** the seed runs and every company returns ≥1 posting.
 
-- [ ] **C-3 — Fetchers + de-dupe** · JOB-1, JOB-2 · depends on: C-2, B-1
+- [x] **C-3 — Fetchers + de-dupe** · JOB-1, JOB-2 · depends on: C-2, B-1
   - `lib/ingest/greenhouse.ts`, `lib/ingest/lever.ts`: plain `fetch`, normalize to one `RawPosting` shape (source, external_id, company, title, location, url, description as plain text with HTML stripped, posted_at).
   - `lib/ingest/dedupe.ts`: skip if (`source`, `external_id`) exists. Also skip if normalized (title + company + location) exists (lowercase, collapse whitespace, strip punctuation).
   - **Done when:** a dry-run script prints counts per company, and re-running adds 0 duplicates.
