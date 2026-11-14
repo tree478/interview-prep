@@ -261,7 +261,7 @@ The order within each person's section is the build order.
   - `lib/types.ts` from §2 plus DB row types. Seed the `skills` table from `data/skills.json` (Soumya writes the JSON in C-1. If it isn't there yet, seed from Appendix A yourself and tell her).
   - **Done when:** migration applies cleanly to the Supabase project, `lib/types.ts` merged to main, the team is told "contracts are in".
 
-- [ ] **B-2 — Gemini helper + skill canonicalizer** · NFR AI validation, MATCH-2 · depends on: B-1
+- [x] **B-2 — Gemini helper + skill canonicalizer** · NFR AI validation, MATCH-2 · depends on: B-1
   - `lib/ai/gemini.ts`: `callGeminiJSON<T>(schema: ZodSchema<T>, prompt, opts)` uses structured JSON output (response schema), parses with zod, retries once on parse/validation failure, then throws a typed `AIError` with a readable message. Model from env `GEMINI_MODEL`. Timeout handling.
   - `lib/match/skills.ts`: `canonicalize(raw: string[]): { canonical: string[]; dropped: string[] }` using names + aliases from `data/skills.json`. Case-insensitive, except short names (C, R, Go) match whole-word and case-sensitive (Appendix A rules). Unit tests for "JS"→JavaScript, "Postgres"→PostgreSQL, "go to market"→not Go, "R&D"→not R.
   - **Done when:** tests pass, and a sample call returns a zod-validated object.
