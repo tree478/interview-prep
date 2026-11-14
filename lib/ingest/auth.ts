@@ -11,7 +11,7 @@ export function safeEqual(a: string | undefined, b: string | null): boolean {
 /** 'cron' when a valid CRON_SECRET bearer or INGEST_KEY header is present, otherwise null. */
 export function secretAuth(
   headers: Headers,
-  env: { CRON_SECRET?: string; INGEST_KEY?: string } = process.env,
+  env: Record<string, string | undefined> = process.env,
 ): 'cron' | null {
   const bearer = headers.get('authorization')?.replace(/^Bearer /, '') ?? null;
   if (safeEqual(env.CRON_SECRET, bearer)) return 'cron';
