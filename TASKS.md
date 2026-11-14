@@ -266,7 +266,7 @@ The order within each person's section is the build order.
   - `lib/match/skills.ts`: `canonicalize(raw: string[]): { canonical: string[]; dropped: string[] }` using names + aliases from `data/skills.json`. Case-insensitive, except short names (C, R, Go) match whole-word and case-sensitive (Appendix A rules). Unit tests for "JS"→JavaScript, "Postgres"→PostgreSQL, "go to market"→not Go, "R&D"→not R.
   - **Done when:** tests pass, and a sample call returns a zod-validated object.
 
-- [ ] **B-3 — `extractPosting` (unblocks Soumya)** · MATCH-1, MATCH-1a, MATCH-2 · depends on: B-2 · **target Sat noon**
+- [x] **B-3 — `extractPosting` (unblocks Soumya)** · MATCH-1, MATCH-1a, MATCH-2 · depends on: B-2 · **target Sat noon**
   - `lib/ai/extractPosting.ts`: `extractPosting(job: { title; company; location; description }) → PostingExtraction` (required skills, preferred skills, majors, graduation window, location(s), remote, sponsorship yes/no/unknown, pay range, role type), zod-validated, with skills run through `canonicalize`. Return `dropped` skills separately so Soumya can save `jobs.dropped_skills`.
   - Export the zod schema and type. Tell Soumya the signature as soon as it's merged.
   - **Done when:** it runs on 3 real Greenhouse postings and the output looks right by eye.
