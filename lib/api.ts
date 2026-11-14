@@ -32,7 +32,6 @@ import { createClient } from "@/lib/supabase/client";
 import applicationsMock from "@/mocks/applications.json";
 import atsMock from "@/mocks/ats.json";
 import botRunsMock from "@/mocks/bot-runs.json";
-import feedMock from "@/mocks/feed.json";
 import gapsMock from "@/mocks/gaps.json";
 import interviewMock from "@/mocks/interview.json";
 import resumeMock from "@/mocks/resume.json";
@@ -136,16 +135,11 @@ export function getFeed(filters: FeedFilters = {}) {
   }
   const qs = params.toString();
 
-  // In mock mode, apply the filters ourselves so the UI behaves realistically.
-  const mock = feedMock.filter(
-    ({ job }) =>
-      (!filters.location ||
-        (job.location ?? "").toLowerCase().includes(filters.location.toLowerCase())) &&
-      (!filters.sponsorship || job.sponsorship === filters.sponsorship) &&
-      (!filters.roleType || job.roleType === filters.roleType),
-  );
-
-  return call(z.array(feedItemSchema), `/api/feed${qs ? `?${qs}` : ""}`, { mock });
+  // Always real (live: true), even with mocks on: GET /api/feed is finished and
+  // returns FeedItem[] (same schema), already sorted with hard mismatches last.
+  // Saving the profile rescores through the real POST /api/match, so a mocked
+  // feed would never show the result (e.g. sponsorship hard-mismatch badges).
+  return call(z.array(feedItemSchema), `/api/feed${qs ? `?${qs}` : ""}`, { live: true });
 }
 
 /** Finds one job from the feed. There is no single-job route in the contract yet. */
@@ -332,6 +326,12 @@ export type ProfileUpdate = {
   clubs: { name: string; role: string | null }[];
   skills: string[];
   interests: string[];
+  // Job preferences (PROF-3). POST /api/match reads these; needs_sponsorship drives hard mismatches.
+  needs_sponsorship: boolean;
+  open_to_relocation: boolean;
+  preferred_locations: string[];
+  /** Minimum yearly pay in USD (lib/match/score.ts compares it with yearly posting pay). */
+  min_pay: number | null;
 };
 export type ExperienceInsert = {
   user_id: string;

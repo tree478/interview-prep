@@ -208,7 +208,7 @@ The order within each person's section is the build order.
   - Show the ATS `missingSections` result here as a small "possible issues" note (full UI is in A-6).
   - **Done when:** upload → edit one field → save → reload shows saved values. Works on mocks and then on the real route.
 
-- [ ] **A-4 — Profile + job preferences page** · PROF-1, PROF-3 · depends on: A-3
+- [x] **A-4 — Profile + job preferences page** · PROF-1, PROF-3 · depends on: A-3
   - Same editable profile as A-3, reachable from the dashboard. Add preferences: needs sponsorship (toggle), open to relocation (toggle), preferred locations (tag input), minimum pay (number).
   - On save, call `POST /api/match` so scores refresh.
   - **Done when:** changing "needs sponsorship" to yes and saving changes the feed (hard-mismatch flags appear).

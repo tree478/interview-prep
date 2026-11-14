@@ -13,6 +13,7 @@ import { ResumeDropzone } from "@/components/profile/resume-dropzone";
 import {
   draftFromParsedResume,
   emptyDraft,
+  preferencesFromRow,
   toExperienceInserts,
   toProfileUpdate,
   type ProfileDraft,
@@ -39,6 +40,9 @@ export default function OnboardingPage() {
   if (me.status === "loading") return <LoadingCards count={1} />;
   if (me.status === "error") return <ErrorMessage message={me.error} onRetry={me.reload} />;
   const { profile } = me.data;
+  // Keep whatever preferences are already saved (sponsorship etc.). A résumé never
+  // contains them, so a re-upload from the profile page must not reset them.
+  const savedPreferences = preferencesFromRow(profile);
 
   async function handleFile(file: File) {
     setStep({ name: "reading" });
@@ -46,7 +50,7 @@ export default function OnboardingPage() {
       const { parsed, ats } = await uploadResume(file);
       setStep({
         name: "review",
-        draft: draftFromParsedResume(parsed, profile.full_name),
+        draft: draftFromParsedResume(parsed, profile.full_name, savedPreferences),
         fromResume: true,
         missingSections: ats.missingSections,
       });
@@ -86,7 +90,7 @@ export default function OnboardingPage() {
             <button
               type="button"
               className="rounded-sm font-medium text-foreground underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-              onClick={() => setStep({ name: "review", draft: emptyDraft(profile.full_name), fromResume: false, missingSections: [] })}
+              onClick={() => setStep({ name: "review", draft: emptyDraft(profile.full_name, savedPreferences), fromResume: false, missingSections: [] })}
             >
               Skip, fill in manually
             </button>
@@ -121,7 +125,7 @@ export default function OnboardingPage() {
             )}
             <Button
               variant="outline"
-              onClick={() => setStep({ name: "review", draft: emptyDraft(profile.full_name), fromResume: false, missingSections: [] })}
+              onClick={() => setStep({ name: "review", draft: emptyDraft(profile.full_name, savedPreferences), fromResume: false, missingSections: [] })}
             >
               Fill in manually
             </Button>
