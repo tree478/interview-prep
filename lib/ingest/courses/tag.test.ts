@@ -41,7 +41,7 @@ describe('tagCourses', () => {
         { code: 'COMPSCI 999', skills: ['Python'] },
       ],
     }));
-    const sleep = vi.fn(async () => {});
+    const sleep = vi.fn<(ms: number) => Promise<void>>(async () => {});
     const map = await tagCourses([course(1), course(2)], { gemini, sleep });
     expect([...map.keys()].sort()).toEqual(['COMPSCI 101', 'COMPSCI 102']);
     for (const skills of map.values()) {
@@ -52,7 +52,7 @@ describe('tagCourses', () => {
 
   it('sends batches of 20, paced 4 s apart', async () => {
     const { gemini, fn } = fake((p) => ({ courses: codesIn(p).map((code) => ({ code, skills: ['Python'] })) }));
-    const sleep = vi.fn(async () => {});
+    const sleep = vi.fn<(ms: number) => Promise<void>>(async () => {});
     const courses = Array.from({ length: 45 }, (_, i) => course(i));
     const map = await tagCourses(courses, { gemini, sleep });
     expect(fn).toHaveBeenCalledTimes(3);
@@ -118,7 +118,7 @@ describe('tagCourses', () => {
     const { gemini } = fake((p, call) =>
       call === 0 ? new Error('429 RESOURCE_EXHAUSTED') : { courses: codesIn(p).map((code) => ({ code, skills: ['Python'] })) },
     );
-    const sleep = vi.fn(async () => {});
+    const sleep = vi.fn<(ms: number) => Promise<void>>(async () => {});
     await tagCourses([course(1)], { gemini, sleep });
     expect(sleep.mock.calls.map((c) => c[0])).toContain(RATE_LIMIT_WAIT_MS);
   });
