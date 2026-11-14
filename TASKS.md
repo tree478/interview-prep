@@ -329,7 +329,7 @@ The order within each person's section is the build order.
   - `filterRoles(postings)`: Grok labels each title/location as `internship` / `new_grad` / `other`. Keep internship + new_grad. Batch titles only (cheap). On failure, fall back to a keyword filter (intern, co-op, new grad, entry level, university, graduate).
   - **Done when:** both work against the live xAI API, and the fallback path is tested by forcing an invalid response.
 
-- [ ] **C-5 — `POST /api/ingest/run` + `GET /api/ingest/runs` + cron** · JOB-3, JOB-4, MATCH-1a, NFR Reliability · depends on: C-4, B-3
+- [x] **C-5 — `POST /api/ingest/run` + `GET /api/ingest/runs` + cron** · JOB-3, JOB-4, MATCH-1a, NFR Reliability · depends on: C-4, B-3
   - Create a `bot_runs` row (`status: running`), return `{ runId }` immediately, then continue the work with Next's `after()` (or `waitUntil`) so the button doesn't hang. Set `maxDuration`.
   - Steps: retry failed extractions (once each) → `selectCompanies` → fetch → `filterRoles` → dedupe → insert jobs (`extraction_status: pending`) → call Miranda's `extractPosting` in batches of 5, **max 40 per run** → save `extracted_json`, `dropped_skills`, `role_type`, status done/failed → update `companies.last_checked_at` / `last_postings_found` → finish the run row (companies + reasons, jobs added, extracted, errors).
   - Auth: manual runs need a logged-in user. Cron runs need `Authorization: Bearer ${CRON_SECRET}`.
