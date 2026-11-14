@@ -337,7 +337,7 @@ The order within each person's section is the build order.
   - `GET /api/ingest/runs`: last 20 runs, newest first, shaped as `BotRun`.
   - **Done when:** clicking the button (or curl) produces a logged run with Grok's reasons, and new jobs appear with `extraction_status: done`.
 
-- [ ] **C-6 — `scripts/backfill-extraction`** · MATCH-1a · depends on: C-5
+- [x] **C-6 — `scripts/backfill-extraction`** · MATCH-1a · depends on: C-5
   - Loops over pending/failed jobs in batches until **≥100 are extracted**, with a delay between batches for rate limits. Prints the top `dropped_skills` so we can decide whether to extend `skills.json`.
   - **Done when:** ≥100 extracted postings from ≥10 companies in the DB. Run this **by Sat 5 pm** so Miranda can test scoring.
 
