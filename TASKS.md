@@ -313,7 +313,7 @@ The order within each person's section is the build order.
   - `[{ canonical_name, aliases[], category }]` for every row in PRD Appendix A. Mark short names (C, R, Go) with `"whole_word_case_sensitive": true`.
   - **Done when:** valid JSON on main, and every Appendix A skill is present (count them).
 
-- [ ] **C-2 — Company list (curated + verified)** · JOB-1, open question §10 · depends on: nothing
+- [x] **C-2 — Company list (curated + verified)** · JOB-1, open question §10 · depends on: nothing
   - `data/companies.json`: 15–25 companies that hire UMass students, each `{ name, source: 'greenhouse'|'lever', slug }`. Verify every slug actually returns jobs (`boards-api.greenhouse.io/v1/boards/{slug}/jobs`, `api.lever.co/v0/postings/{slug}?mode=json`). Drop empty ones. You need **≥10 companies and ≥100 postings** total (success metric).
   - `scripts/seed-companies.ts` upserts into `companies`.
   - **Done when:** the seed runs and every company returns ≥1 posting.
