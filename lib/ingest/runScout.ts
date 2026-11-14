@@ -65,7 +65,8 @@ export async function runScout(runId: string, deps: ScoutDeps): Promise<void> {
     }
 
     const roles = await deps.filterRoles(fetched.map((p) => ({ title: p.title, location: p.location })));
-    errors.push(...roles.errors);
+    // one message per distinct failure, not one per 100-posting chunk
+    errors.push(...new Set(roles.errors));
     const kept: { p: RawPosting; role: RoleType }[] = [];
     fetched.forEach((p, i) => {
       const role = roles.roleTypes[i];
