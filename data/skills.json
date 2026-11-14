@@ -1,0 +1,647 @@
+[
+  {
+    "canonical_name": "Python",
+    "aliases": [
+      "py",
+      "python3"
+    ],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "Java",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "JavaScript",
+    "aliases": [
+      "JS",
+      "ECMAScript",
+      "ES6"
+    ],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "TypeScript",
+    "aliases": [
+      "TS"
+    ],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "C",
+    "aliases": [],
+    "category": "Languages",
+    "whole_word_case_sensitive": true
+  },
+  {
+    "canonical_name": "C++",
+    "aliases": [
+      "cpp"
+    ],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "C#",
+    "aliases": [
+      "csharp"
+    ],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "Go",
+    "aliases": [
+      "Golang"
+    ],
+    "category": "Languages",
+    "whole_word_case_sensitive": true
+  },
+  {
+    "canonical_name": "Rust",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "Kotlin",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "Swift",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "R",
+    "aliases": [],
+    "category": "Languages",
+    "whole_word_case_sensitive": true
+  },
+  {
+    "canonical_name": "MATLAB",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "SQL",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "Bash",
+    "aliases": [
+      "shell",
+      "shell scripting"
+    ],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "Scala",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "Ruby",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "PHP",
+    "aliases": [],
+    "category": "Languages"
+  },
+  {
+    "canonical_name": "HTML",
+    "aliases": [
+      "HTML5"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "CSS",
+    "aliases": [
+      "CSS3",
+      "Sass",
+      "SCSS"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "React",
+    "aliases": [
+      "React.js",
+      "ReactJS"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "Next.js",
+    "aliases": [
+      "NextJS"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "Angular",
+    "aliases": [
+      "AngularJS"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "Vue",
+    "aliases": [
+      "Vue.js"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "Tailwind CSS",
+    "aliases": [
+      "Tailwind"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "Redux",
+    "aliases": [],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "React Native",
+    "aliases": [],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "iOS development",
+    "aliases": [
+      "iOS",
+      "UIKit",
+      "SwiftUI"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "Android development",
+    "aliases": [
+      "Android SDK",
+      "Jetpack Compose"
+    ],
+    "category": "Frontend and mobile"
+  },
+  {
+    "canonical_name": "Node.js",
+    "aliases": [
+      "Node",
+      "NodeJS"
+    ],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "Express",
+    "aliases": [
+      "Express.js"
+    ],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "Django",
+    "aliases": [],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "Flask",
+    "aliases": [],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "FastAPI",
+    "aliases": [],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "Spring",
+    "aliases": [
+      "Spring Boot"
+    ],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "Ruby on Rails",
+    "aliases": [
+      "Rails"
+    ],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "REST APIs",
+    "aliases": [
+      "REST",
+      "RESTful"
+    ],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "GraphQL",
+    "aliases": [],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "gRPC",
+    "aliases": [],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "Microservices",
+    "aliases": [],
+    "category": "Backend"
+  },
+  {
+    "canonical_name": "PostgreSQL",
+    "aliases": [
+      "Postgres"
+    ],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "MySQL",
+    "aliases": [],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "SQLite",
+    "aliases": [],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "MongoDB",
+    "aliases": [
+      "Mongo"
+    ],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "Redis",
+    "aliases": [],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "DynamoDB",
+    "aliases": [],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "Snowflake",
+    "aliases": [],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "BigQuery",
+    "aliases": [],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "Database systems",
+    "aliases": [
+      "database design",
+      "data modeling"
+    ],
+    "category": "Databases"
+  },
+  {
+    "canonical_name": "Machine learning",
+    "aliases": [
+      "ML"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Deep learning",
+    "aliases": [
+      "neural networks"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "PyTorch",
+    "aliases": [
+      "Torch"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "TensorFlow",
+    "aliases": [
+      "TF",
+      "Keras"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "scikit-learn",
+    "aliases": [
+      "sklearn"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "pandas",
+    "aliases": [],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "NumPy",
+    "aliases": [],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Natural language processing",
+    "aliases": [
+      "NLP"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Computer vision",
+    "aliases": [
+      "CV"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Large language models",
+    "aliases": [
+      "LLMs",
+      "generative AI",
+      "GenAI"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Reinforcement learning",
+    "aliases": [
+      "RL"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Statistics",
+    "aliases": [
+      "statistical analysis",
+      "probability"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Data analysis",
+    "aliases": [
+      "data analytics"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Data visualization",
+    "aliases": [
+      "matplotlib",
+      "seaborn"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Apache Spark",
+    "aliases": [
+      "Spark",
+      "PySpark"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "Jupyter",
+    "aliases": [
+      "Jupyter Notebook"
+    ],
+    "category": "Data and ML"
+  },
+  {
+    "canonical_name": "AWS",
+    "aliases": [
+      "Amazon Web Services",
+      "EC2",
+      "S3",
+      "Lambda"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "Google Cloud",
+    "aliases": [
+      "GCP"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "Microsoft Azure",
+    "aliases": [
+      "Azure"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "Docker",
+    "aliases": [
+      "containers",
+      "containerization"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "Kubernetes",
+    "aliases": [
+      "K8s"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "CI/CD",
+    "aliases": [
+      "continuous integration",
+      "GitHub Actions",
+      "Jenkins"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "Terraform",
+    "aliases": [
+      "infrastructure as code",
+      "IaC"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "Linux",
+    "aliases": [
+      "Unix"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "Git",
+    "aliases": [
+      "GitHub",
+      "GitLab",
+      "version control"
+    ],
+    "category": "Cloud and DevOps"
+  },
+  {
+    "canonical_name": "Data structures",
+    "aliases": [],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Algorithms",
+    "aliases": [],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Object-oriented programming",
+    "aliases": [
+      "OOP"
+    ],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Operating systems",
+    "aliases": [
+      "OS"
+    ],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Computer networks",
+    "aliases": [
+      "networking",
+      "TCP/IP"
+    ],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Distributed systems",
+    "aliases": [],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Computer architecture",
+    "aliases": [],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Compilers",
+    "aliases": [],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Concurrency",
+    "aliases": [
+      "multithreading",
+      "parallel programming"
+    ],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Cybersecurity",
+    "aliases": [
+      "security",
+      "information security"
+    ],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Cryptography",
+    "aliases": [],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Embedded systems",
+    "aliases": [
+      "firmware",
+      "microcontrollers",
+      "Arduino"
+    ],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Human-computer interaction",
+    "aliases": [
+      "HCI"
+    ],
+    "category": "CS fundamentals"
+  },
+  {
+    "canonical_name": "Software engineering",
+    "aliases": [
+      "SDLC"
+    ],
+    "category": "Engineering practice"
+  },
+  {
+    "canonical_name": "Testing",
+    "aliases": [
+      "unit testing",
+      "Jest",
+      "pytest",
+      "JUnit"
+    ],
+    "category": "Engineering practice"
+  },
+  {
+    "canonical_name": "Agile",
+    "aliases": [
+      "Scrum"
+    ],
+    "category": "Engineering practice"
+  },
+  {
+    "canonical_name": "Code review",
+    "aliases": [],
+    "category": "Engineering practice"
+  },
+  {
+    "canonical_name": "API design",
+    "aliases": [],
+    "category": "Engineering practice"
+  },
+  {
+    "canonical_name": "Figma",
+    "aliases": [],
+    "category": "Design and analytics tools"
+  },
+  {
+    "canonical_name": "UI/UX design",
+    "aliases": [
+      "UX",
+      "UI design",
+      "user experience"
+    ],
+    "category": "Design and analytics tools"
+  },
+  {
+    "canonical_name": "Excel",
+    "aliases": [
+      "Microsoft Excel",
+      "spreadsheets"
+    ],
+    "category": "Design and analytics tools"
+  },
+  {
+    "canonical_name": "Tableau",
+    "aliases": [],
+    "category": "Design and analytics tools"
+  },
+  {
+    "canonical_name": "Power BI",
+    "aliases": [],
+    "category": "Design and analytics tools"
+  }
+]

@@ -309,7 +309,7 @@ The order within each person's section is the build order.
 
 > Use Cursor as the primary agent for your ingest/bot code so the SpaceXSI "Cursor as core agent" claim is true. Take Agent-mode screenshots as you go.
 
-- [ ] **C-1 — `data/skills.json` from Appendix A** · MATCH-2 · depends on: nothing · **do first, Miranda needs it for B-1**
+- [x] **C-1 — `data/skills.json` from Appendix A** · MATCH-2 · depends on: nothing · **do first, Miranda needs it for B-1**
   - `[{ canonical_name, aliases[], category }]` for every row in PRD Appendix A. Mark short names (C, R, Go) with `"whole_word_case_sensitive": true`.
   - **Done when:** valid JSON on main, and every Appendix A skill is present (count them).
 
