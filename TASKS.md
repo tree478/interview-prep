@@ -271,12 +271,12 @@ The order within each person's section is the build order.
   - Export the zod schema and type. Tell Soumya the signature as soon as it's merged.
   - **Done when:** it runs on 3 real Greenhouse postings and the output looks right by eye.
 
-- [ ] **B-4 — `POST /api/resume`** · AUTH-3, AUTH-4, ATS-1 (sections), NFR Performance · depends on: B-2
+- [x] **B-4 — `POST /api/resume`** · AUTH-3, AUTH-4, ATS-1 (sections), NFR Performance · depends on: B-2
   - Upload the PDF to the `resumes` bucket under `{user_id}/`. Extract text with `unpdf` (not pdf-parse). Gemini → `ParsedResume` (zod, canonical skills, interests ≤10). Deterministic section check (Education / Experience / Skills headings in the raw text) → `AtsReport.missingSections`.
   - Save a `resumes` row (`raw_text`, `parsed_json`, `ats_report`). Do **not** write `profiles` here. The UI saves after the user edits (AUTH-5).
   - **Done when:** 3 team resumes parse in under 20 s with ≥80% of fields correct (PRD success metric). Note which fields fail.
 
-- [ ] **B-5 — Match scoring + `POST /api/match` + `GET /api/feed`** · MATCH-3, MATCH-4, MATCH-5, MATCH-6, JOB-5, NFR Cost · depends on: B-3, some extracted jobs from C-5
+- [x] **B-5 — Match scoring + `POST /api/match` + `GET /api/feed`** · MATCH-3, MATCH-4, MATCH-5, MATCH-6, JOB-5, NFR Cost · depends on: B-3, some extracted jobs from C-5
   - `lib/match/score.ts` (pure, unit-tested): score = 0.5R + 0.2P + 0.3Q. If there are no preferred skills or no applicable checks, that weight moves to R. No required skills → `score: null`. Hard mismatch (needs sponsorship + posting says no, or grad year outside window) → cap at 40 with a reason. Use **all** profile skills plus experience skills.
   - `POST /api/match`: recompute for the session user against all `extraction_status='done'` jobs where there's no match row or the profile/job changed since `computed_at`. Upsert `matches`.
   - `GET /api/feed`: join jobs + matches for the user, apply filters, sort: scored (desc) → N/A → hard mismatch last. Hide jobs not extracted. Must load in under 2 s from cached rows.
@@ -286,7 +286,7 @@ The order within each person's section is the build order.
   - Deterministic: for each missing required/preferred skill on the job's match, select `active` `umass_resources` whose `skills[]` contain it. Courses first, then labs. Max 3 per skill. Return "no match" (empty array) rather than anything invented. No Gemini at P0 (GAP-3 is P1).
   - **Done when:** the demo posting's missing skills each return at least one real CICS course or lab.
 
-- [ ] **B-7 — `POST /api/ats`** · ATS-1, ATS-2 · depends on: B-4, B-3
+- [x] **B-7 — `POST /api/ats`** · ATS-1, ATS-2 · depends on: B-4, B-3
   - Reuse `missingSections` from the latest resume. Keyword coverage = the share of the posting's canonical skills (required + preferred) found in the resume raw text via `canonicalize`. Flag `low_keyword_coverage` below 50% (tunable constant). Wording: "possible issue".
   - **Done when:** the demo resume (no Skills section) returns a missing_section issue.
 
