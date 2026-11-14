@@ -190,7 +190,7 @@ The order within each person's section is the build order.
 
 ### Brody (A) — Frontend / UX · Claude Code
 
-- [ ] **A-1 — Mocks + app shell** · PRD §4 · depends on: nothing
+- [x] **A-1 — Mocks + app shell** · PRD §4 · depends on: nothing
   - `mocks/` with one JSON file per contract in §2: 12 `FeedItem`s (include 1 hard-mismatch, 1 N/A, scores spread 30–90%), 1 `ParsedResume`, gaps for 3 skills (courses + 1 lab with faculty), 1 `AtsReport` missing Skills, 1 `TailorResult` with 4 diffs + 1 blocked ("added a percentage"), 6 `Application`s across stages, 3 `BotRun`s.
   - `lib/api-client.ts` is not yours. Put a fetch wrapper in `components/lib/api.ts` with a `USE_MOCKS` flag (env `NEXT_PUBLIC_USE_MOCKS`) so every page switches from mocks to real routes with one change.
   - Dashboard layout: sidebar/nav with Feed, Tracker, Profile, Bot activity, Interview. Use shadcn/ui.

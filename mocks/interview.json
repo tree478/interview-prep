@@ -1,0 +1,15 @@
+{
+  "questions": [
+    { "id": "q-1", "type": "behavioral", "text": "Tell me about a time you had to learn a new tool quickly to finish a project." },
+    { "id": "q-2", "type": "behavioral", "text": "Describe a situation where you disagreed with a teammate. How did you resolve it?" },
+    { "id": "q-3", "type": "resume", "text": "You built a Pandas pipeline for sensor logs at the Amherst Robotics Lab. What was the hardest data-quality problem you ran into?" },
+    { "id": "q-4", "type": "resume", "text": "At UMass IT you automated laptop imaging with Python. How did you decide what to automate first?" }
+  ],
+  "feedback": {
+    "situation": { "rating": 4, "comment": "Clear context: you named the lab and the field-test data." },
+    "task": { "rating": 3, "comment": "Say explicitly what you were responsible for, not just what the team needed." },
+    "action": { "rating": 4, "comment": "Good detail on the cleaning steps you took in Pandas." },
+    "result": { "rating": 2, "comment": "The answer ends without an outcome. What changed because of your pipeline?" },
+    "improvement": "Finish with a concrete result, such as how the cleaned data was used or what it let the lab do that it couldn't before."
+  }
+}

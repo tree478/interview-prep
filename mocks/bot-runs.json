@@ -1,0 +1,29 @@
+[
+  {
+    "id": "run-3", "kind": "scout", "status": "done", "trigger": "manual",
+    "startedAt": "2026-11-14T09:02:00Z", "finishedAt": "2026-11-14T09:03:41Z",
+    "companiesSelected": [
+      { "company": "Wayfair", "reason": "Not checked in 3 days and 4 students saved its postings", "fallback": false },
+      { "company": "Datadog", "reason": "Large internship program, last check found new roles", "fallback": false },
+      { "company": "Toast", "reason": "Boston-based and popular with saved jobs", "fallback": false }
+    ],
+    "jobsAdded": 9, "jobsExtracted": 9, "errors": []
+  },
+  {
+    "id": "run-2", "kind": "courses", "status": "done", "trigger": "cron",
+    "startedAt": "2026-11-14T06:00:00Z", "finishedAt": "2026-11-14T06:00:12Z",
+    "companiesSelected": [], "jobsAdded": 0, "jobsExtracted": 0,
+    "courseStats": { "found": 148, "added": 0, "changed": 2, "removed": 0, "unchanged": false },
+    "errors": []
+  },
+  {
+    "id": "run-1", "kind": "scout", "status": "failed", "trigger": "cron",
+    "startedAt": "2026-11-14T03:00:00Z", "finishedAt": "2026-11-14T03:00:55Z",
+    "companiesSelected": [
+      { "company": "HubSpot", "reason": "Fallback: least recently checked", "fallback": true },
+      { "company": "Klaviyo", "reason": "Fallback: least recently checked", "fallback": true }
+    ],
+    "jobsAdded": 3, "jobsExtracted": 1,
+    "errors": ["Grok timed out; used fallback company list", "Gemini extraction failed for 2 postings (will retry)"]
+  }
+]

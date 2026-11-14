@@ -1,0 +1,46 @@
+{
+  "gaps": [
+    {
+      "skill": "Machine Learning",
+      "resources": [
+        {
+          "id": "res-cs589",
+          "type": "course",
+          "name": "Machine Learning",
+          "code": "COMPSCI 589",
+          "url": "https://content.cs.umass.edu/content/spring-2026-course-descriptions",
+          "description": "Introduction to core machine learning models and algorithms for classification, regression, and dimensionality reduction.",
+          "instructors": ["Instructor TBA"]
+        },
+        {
+          "id": "res-lab-ials",
+          "type": "lab",
+          "name": "Information Extraction and Synthesis Laboratory",
+          "url": "https://www.cics.umass.edu/organizations",
+          "description": "Research in machine learning, natural language processing, and knowledge representation.",
+          "faculty": [
+            { "name": "Faculty Member A", "profile_url": "https://www.cics.umass.edu/people" }
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "Statistics",
+      "resources": [
+        {
+          "id": "res-cs240",
+          "type": "course",
+          "name": "Reasoning Under Uncertainty",
+          "code": "COMPSCI 240",
+          "url": "https://content.cs.umass.edu/content/spring-2026-course-descriptions",
+          "description": "Probability, random variables, and statistical reasoning as used in computer science.",
+          "instructors": ["Instructor TBA"]
+        }
+      ]
+    },
+    {
+      "skill": "PyTorch",
+      "resources": []
+    }
+  ]
+}
