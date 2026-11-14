@@ -190,18 +190,18 @@ The order within each person's section is the build order.
 
 ### Brody (A) — Frontend / UX · Claude Code
 
-- [ ] **A-1 — Mocks + app shell** · PRD §4 · depends on: nothing
+- [x] **A-1 — Mocks + app shell** · PRD §4 · depends on: nothing
   - `mocks/` with one JSON file per contract in §2: 12 `FeedItem`s (include 1 hard-mismatch, 1 N/A, scores spread 30–90%), 1 `ParsedResume`, gaps for 3 skills (courses + 1 lab with faculty), 1 `AtsReport` missing Skills, 1 `TailorResult` with 4 diffs + 1 blocked ("added a percentage"), 6 `Application`s across stages, 3 `BotRun`s.
   - `lib/api-client.ts` is not yours. Put a fetch wrapper in `components/lib/api.ts` with a `USE_MOCKS` flag (env `NEXT_PUBLIC_USE_MOCKS`) so every page switches from mocks to real routes with one change.
   - Dashboard layout: sidebar/nav with Feed, Tracker, Profile, Bot activity, Interview. Use shadcn/ui.
   - **Done when:** every page route exists and renders mock data. `npm run build` passes.
 
-- [ ] **A-2 — Sign-up + log-in** · AUTH-1, AUTH-2 · depends on: setup (Supabase client)
+- [x] **A-2 — Sign-up + log-in** · AUTH-1, AUTH-2 · depends on: setup (Supabase client)
   - Sign-up form: full name, email, password. Client-side check that the email ends in `@umass.edu`, with an inline error. Miranda's DB trigger (B-1) enforces it server-side too.
   - Log-in form. Session persists (Supabase SSR cookies). Middleware redirects logged-out users from `/dashboard/**` to `/login`.
   - **Done when:** a `@umass.edu` user can sign up, log out and log back in. `test@gmail.com` is refused with a clear message.
 
-- [ ] **A-3 — Resume upload + autofill review screen** · AUTH-3, AUTH-4, AUTH-5, PROF-1 · depends on: A-2, contract (real: B-3)
+- [x] **A-3 — Resume upload + autofill review screen** · AUTH-3, AUTH-4, AUTH-5, PROF-1 · depends on: A-2, contract (real: B-3)
   - After sign-up: PDF drop zone → `POST /api/resume` → loading state ("Reading your resume…", can take up to 20 s) → editable form prefilled from `ParsedResume`.
   - Sections: Academics (year, majors, minors, honors, clubs + e-board role), Experiences (add/remove/edit, bullets editable), Skills (chips, top 20 + "Show all", add/remove), Interests (max 10, enforce).
   - Save writes `profiles` + `experiences` via the Supabase client (RLS protects it), then calls `POST /api/match`, then routes to the feed.
@@ -323,7 +323,7 @@ The order within each person's section is the build order.
   - `lib/ingest/dedupe.ts`: skip if (`source`, `external_id`) exists. Also skip if normalized (title + company + location) exists (lowercase, collapse whitespace, strip punctuation).
   - **Done when:** a dry-run script prints counts per company, and re-running adds 0 duplicates.
 
-- [ ] **C-4 — Grok client + company selection + role filter** · JOB-3, JOB-3a, NFR Privacy · depends on: C-3
+- [x] **C-4 — Grok client + company selection + role filter** · JOB-3, JOB-3a, NFR Privacy · depends on: C-3
   - `lib/ingest/grok.ts`: xAI API call with JSON output + zod + one retry (same pattern as Miranda's Gemini helper, your own file).
   - `selectCompanies()`: input = companies table (name, source, last_checked_at, last_postings_found) + Miranda's aggregate save/apply counts. **No resume text, no user ids.** Output = up to 10 `{ company, reason }`. Then force-add any company not checked in 3+ days. On Grok failure/invalid JSON → fall back to the 10 least recently checked, mark `fallback: true` and log an error.
   - `filterRoles(postings)`: Grok labels each title/location as `internship` / `new_grad` / `other`. Keep internship + new_grad. Batch titles only (cheap). On failure, fall back to a keyword filter (intern, co-op, new grad, entry level, university, graduate).

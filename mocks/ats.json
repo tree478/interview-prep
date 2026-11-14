@@ -1,0 +1,8 @@
+{
+  "missingSections": ["Skills"],
+  "keywordCoverage": 0.62,
+  "issues": [
+    { "type": "missing_section", "detail": "No section titled \"Skills\" was found. Many applicant tracking systems look for one." },
+    { "type": "low_keyword_coverage", "detail": "Your resume mentions 62% of this posting's key terms. Machine Learning and Statistics are missing." }
+  ]
+}

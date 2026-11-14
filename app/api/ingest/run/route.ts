@@ -65,7 +65,7 @@ async function start(request: Request): Promise<NextResponse> {
         db,
         selectCompanies,
         fetchers: { greenhouse: fetchGreenhouse, lever: fetchLever },
-        filterRoles: (p) => filterRoles(p),
+        filterRoles: (postings, opts) => filterRoles(postings, opts),
         extractor,
         now: () => new Date(),
         deadline,
