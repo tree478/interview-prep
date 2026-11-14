@@ -2182,5 +2182,159 @@
       ]
     },
     "source_url": "https://content.cs.umass.edu/content/spring-2026-course-descriptions"
+  },
+  {
+    "type": "lab",
+    "name": "Center for Intelligent Information Retrieval",
+    "url": "http://ciir.cs.umass.edu/",
+    "description": "One of the leading research groups working in the areas of information retrieval and information extraction. Studies and develops tools that provide effective and efficient access to large networks of heterogeneous, multimedia information.",
+    "skills": [
+      "Machine learning",
+      "Natural language processing"
+    ],
+    "meta": {
+      "research_area": "Information retrieval and information extraction",
+      "faculty": [
+        {
+          "name": "James Allan",
+          "profile_url": "https://www.cics.umass.edu/about/directory/james-allan"
+        },
+        {
+          "name": "W. Bruce Croft",
+          "profile_url": "https://www.cics.umass.edu/about/directory/w-bruce-croft"
+        },
+        {
+          "name": "Ben Marlin",
+          "profile_url": "https://www.cics.umass.edu/about/directory/ben-marlin"
+        },
+        {
+          "name": "Andrew McCallum",
+          "profile_url": "https://www.cics.umass.edu/about/directory/andrew-mccallum"
+        },
+        {
+          "name": "Brendan O'Connor",
+          "profile_url": "https://www.cics.umass.edu/about/directory/brendan-oconnor"
+        },
+        {
+          "name": "Razieh Rahimi",
+          "profile_url": "https://www.cics.umass.edu/about/directory/razieh-rahimi"
+        },
+        {
+          "name": "Hamed Zamani",
+          "profile_url": "https://www.cics.umass.edu/about/directory/hamed-zamani"
+        }
+      ]
+    },
+    "source_url": "https://www.cics.umass.edu/organizations/center-intelligent-information-retrieval"
+  },
+  {
+    "type": "lab",
+    "name": "Autonomous Learning Laboratory",
+    "url": "https://all.cs.umass.edu/",
+    "description": "Focuses on both machine and biological learning. Areas of study include reinforcement learning, safe machine learning, and biologically inspired machine learning.",
+    "skills": [
+      "Machine learning",
+      "Reinforcement learning"
+    ],
+    "meta": {
+      "research_area": "Reinforcement learning, safe machine learning, and biologically inspired machine learning",
+      "faculty": [
+        {
+          "name": "Bruno Castro da Silva",
+          "profile_url": "https://www.cics.umass.edu/about/directory/bruno-castro-da-silva"
+        },
+        {
+          "name": "Philip Thomas",
+          "profile_url": "https://www.cics.umass.edu/about/directory/philip-thomas"
+        }
+      ]
+    },
+    "source_url": "https://www.cics.umass.edu/organizations/autonomous-learning-laboratory"
+  },
+  {
+    "type": "lab",
+    "name": "Natural Language Processing Group",
+    "url": "https://nlp.cs.umass.edu/",
+    "description": "Faculty and students from CICS plus affiliated members in linguistics, social sciences, and humanities. Research spans computational social science, information extraction, neural language modeling and representation learning, question answering, and digital humanities.",
+    "skills": [
+      "Natural language processing",
+      "Large language models"
+    ],
+    "meta": {
+      "research_area": "Natural language processing, neural language modeling, and question answering",
+      "faculty": [
+        {
+          "name": "Andrew McCallum",
+          "profile_url": "https://www.cics.umass.edu/about/directory/andrew-mccallum"
+        },
+        {
+          "name": "Brendan O'Connor",
+          "profile_url": "https://www.cics.umass.edu/about/directory/brendan-oconnor"
+        }
+      ]
+    },
+    "source_url": "https://www.cics.umass.edu/organizations/natural-language-processing-group"
+  },
+  {
+    "type": "lab",
+    "name": "Laboratory for Advanced Systems Software",
+    "url": "https://lass.cs.umass.edu/",
+    "description": "Investigates systems issues for distributed systems ranging from large server clusters to networks of small sensors. Research has focused on operating systems, distributed systems, networking, mobile systems, web, and multimedia.",
+    "skills": [
+      "Distributed systems",
+      "Operating systems",
+      "Computer networks"
+    ],
+    "meta": {
+      "research_area": "Distributed systems, operating systems, and networking",
+      "faculty": [
+        {
+          "name": "Prashant Shenoy",
+          "profile_url": "https://www.cics.umass.edu/about/directory/prashant-shenoy"
+        }
+      ]
+    },
+    "source_url": "https://www.cics.umass.edu/organizations/lass"
+  },
+  {
+    "type": "lab",
+    "name": "Statistical Social Language Analysis Lab",
+    "url": "http://slanglab.cs.umass.edu/",
+    "description": "Develops natural language processing and machine learning methods to help scientific investigation about political and social trends, such as analyzing congressional bills, news about political events, and sentiment in social media.",
+    "skills": [
+      "Statistics",
+      "Natural language processing",
+      "Machine learning"
+    ],
+    "meta": {
+      "research_area": "Statistical natural language processing and machine learning for social science",
+      "faculty": [
+        {
+          "name": "Brendan O'Connor",
+          "profile_url": "https://www.cics.umass.edu/about/directory/brendan-oconnor"
+        }
+      ]
+    },
+    "source_url": "https://www.cics.umass.edu/organizations/statistical-social-language-analysis-lab"
+  },
+  {
+    "type": "lab",
+    "name": "HCI-VIS Lab",
+    "url": "https://groups.cs.umass.edu/hci-vis/",
+    "description": "Conducts research at the intersection of HCI and visualization. Develops novel visualization and interaction techniques to facilitate data analysis, communication, and exploration, and builds community-centered tools for civics and healthcare.",
+    "skills": [
+      "Data visualization",
+      "Human-computer interaction"
+    ],
+    "meta": {
+      "research_area": "Human-computer interaction and information visualization",
+      "faculty": [
+        {
+          "name": "Narges Mahyar",
+          "profile_url": "https://www.cics.umass.edu/about/directory/narges-mahyar"
+        }
+      ]
+    },
+    "source_url": "https://groups.cs.umass.edu/hci-vis/people/"
   }
 ]
