@@ -176,7 +176,7 @@ export function ProfileEditor({
               value={draft.minPay}
               error={errors["profile-minPay"]}
               onChange={(e) => set("minPay", e.target.value)}
-              hint="Compared with yearly pay when a posting states it. Postings that don't state pay are never hidden."
+              hint="Compared with a posting's stated pay; hourly pay counts as 2,080 hours a year. Postings that don't state pay are never hidden."
             />
           </CardContent>
         </Card>
