@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { jobRowSchema } from "./types";
+import {
+  jobRowSchema,
+  matchRefreshSchema,
+  okSchema,
+  resumeUploadSchema,
+  runIdSchema,
+} from "./types";
 
 const job = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -29,5 +35,33 @@ describe("jobRowSchema", () => {
   it("rejects a job row that omits created_at", () => {
     const { created_at: _createdAt, ...withoutCreatedAt } = job;
     expect(jobRowSchema.safeParse(withoutCreatedAt).success).toBe(false);
+  });
+});
+
+describe("route response schemas", () => {
+  it("accepts the resume, match, tailor, and ingest responses", () => {
+    expect(
+      resumeUploadSchema.parse({
+        resumeId: "00000000-0000-4000-8000-000000000001",
+        parsed: {
+          academics: {
+            year: null,
+            majors: [],
+            minors: [],
+            honors: [],
+            clubs: [],
+          },
+          experiences: [],
+          skills: [],
+          interests: [],
+        },
+        ats: { missingSections: [], keywordCoverage: null, issues: [] },
+      }).resumeId,
+    ).toBe("00000000-0000-4000-8000-000000000001");
+    expect(matchRefreshSchema.parse({ updated: 0 }).updated).toBe(0);
+    expect(okSchema.parse({ ok: true }).ok).toBe(true);
+    expect(
+      runIdSchema.parse({ runId: "00000000-0000-4000-8000-000000000002" }).runId,
+    ).toBe("00000000-0000-4000-8000-000000000002");
   });
 });
