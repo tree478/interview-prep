@@ -2,8 +2,9 @@
 // Usage: npx tsx scripts/verify-companies.ts [path/to/companies.json]
 import { readFileSync } from 'node:fs';
 
-// TODO(types): replace with the companies row type from lib/types.ts once B-1 merges
-type CompanySeed = { name: string; source: 'greenhouse' | 'lever'; slug: string };
+import type { CompanyRow } from '../lib/types';
+
+type CompanySeed = Pick<CompanyRow, 'name' | 'source' | 'slug'>;
 
 const EARLY = /\b(intern|internship|co-?op|new grad|graduate|entry[- ]level|university|early career|junior)\b/i;
 const file = process.argv[2] ?? 'data/companies.json';

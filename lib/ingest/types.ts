@@ -1,12 +1,10 @@
-// TODO(types): ingest-internal shape. Ask Miranda whether it belongs in lib/types.ts.
-export type Source = 'greenhouse' | 'lever';
+import type { CompanyRow } from '../types';
 
-export interface CompanyRef {
-  id?: string;
-  name: string;
-  source: Source;
-  slug: string;
-}
+export type Source = CompanyRow['source'];
+
+// TODO(types): RawPosting is ingest-internal. Ask Miranda whether it belongs in lib/types.ts.
+
+export type CompanyRef = Pick<CompanyRow, 'name' | 'source' | 'slug'> & { id?: string };
 
 export interface RawPosting {
   source: Source;

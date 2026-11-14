@@ -3,14 +3,14 @@
 import { readFileSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
+import type { CompanyRow } from '../lib/types';
 
-// TODO(types): replace with the companies row type from lib/types.ts once B-1 merges
 const CompanySeedSchema = z.object({
   name: z.string().min(1),
   source: z.enum(['greenhouse', 'lever']),
   slug: z.string().min(1),
 });
-type CompanySeed = z.infer<typeof CompanySeedSchema>;
+type CompanySeed = Pick<CompanyRow, 'name' | 'source' | 'slug'>;
 
 const MISSING = 'companies table not found: wait for B-1 (Miranda) to merge the migration';
 
