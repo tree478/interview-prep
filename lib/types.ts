@@ -17,6 +17,9 @@ export type RoleType = z.infer<typeof roleTypeSchema>;
 export const sponsorshipSchema = z.enum(["yes", "no", "unknown"]);
 export type Sponsorship = z.infer<typeof sponsorshipSchema>;
 
+export const payIntervalSchema = z.enum(["hour", "month", "year"]);
+export type PayInterval = z.infer<typeof payIntervalSchema>;
+
 const clubSchema = z.object({
   name: z.string(),
   role: z.string().nullable(),
@@ -75,7 +78,7 @@ export const postingExtractionSchema = z.object({
     .object({
       min: z.number().nullable(),
       max: z.number().nullable(),
-      interval: z.enum(["hour", "year"]).nullable(),
+      interval: payIntervalSchema.nullable(),
     })
     .nullable(),
   roleType: roleTypeSchema,
@@ -137,6 +140,23 @@ export const atsRequestSchema = z.object({
   jobId: z.uuid(),
 });
 export type AtsRequest = z.infer<typeof atsRequestSchema>;
+
+export const tailorRequestSchema = z.object({
+  jobId: z.uuid(),
+});
+export type TailorRequest = z.infer<typeof tailorRequestSchema>;
+
+export const tailorDecisionSchema = z.object({
+  id: z.string().min(1),
+  status: z.enum(["accepted", "rejected"]),
+});
+export type TailorDecision = z.infer<typeof tailorDecisionSchema>;
+
+export const tailorPatchSchema = z.object({
+  tailoringId: z.uuid(),
+  decisions: z.array(tailorDecisionSchema).min(1),
+});
+export type TailorPatch = z.infer<typeof tailorPatchSchema>;
 
 export const gapSchema = z.object({
   skill: z.string(),
@@ -337,6 +357,7 @@ export const jobRowSchema = z.object({
   ingested_by_run_id: z.uuid().nullable(),
   role_type: roleTypeSchema.nullable(),
   extraction_attempts: z.number().int(),
+  created_at: z.string(),
 });
 export type JobRow = z.infer<typeof jobRowSchema>;
 

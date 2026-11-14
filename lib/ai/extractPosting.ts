@@ -2,6 +2,7 @@ import { z } from "zod";
 import { callGeminiJSON } from "./gemini";
 import { canonicalize } from "../match/skills";
 import {
+  payIntervalSchema,
   postingExtractionSchema,
   roleTypeSchema,
   sponsorshipSchema,
@@ -23,7 +24,7 @@ const postingModelSchema = z.object({
   sponsorship: sponsorshipSchema,
   payMin: z.number().nullable(),
   payMax: z.number().nullable(),
-  payInterval: z.enum(["hour", "year"]).nullable(),
+  payInterval: payIntervalSchema.nullable(),
   roleType: roleTypeSchema,
 });
 
@@ -77,7 +78,7 @@ export function finalizeExtraction(
   return { extraction, dropped };
 }
 
-function promptFor(job: {
+export function promptFor(job: {
   title: string;
   company: string;
   location: string | null;
@@ -97,7 +98,7 @@ function promptFor(job: {
     "Include a major in majors only if the posting names it.",
     'Set graduationStartYear and graduationEndYear only when the posting states graduation years, such as "class of 2026" or "graduating 2026 or 2027". If it does not state years, set both to null.',
     'Set sponsorship to "yes" only if the posting says they sponsor work authorization. Set it to "no" only if the posting says they will not sponsor. Otherwise set sponsorship to "unknown". Never guess.',
-    'Set payMin, payMax, and payInterval only when the posting states a pay number. payInterval is "hour" or "year" as stated. Do not convert hourly pay to annual pay. If no pay number is stated, set payMin, payMax, and payInterval to null.',
+    'Set payMin, payMax, and payInterval only when the posting states a pay number. payInterval is "hour", "month", or "year" as stated. Do not convert hourly or monthly pay into another interval. If no pay number is stated, set payMin, payMax, and payInterval to null.',
     "Set remote to true only if the posting says the role is remote or distributed. Otherwise set remote to false.",
     'Set roleType from the title and body to "internship", "new_grad", or "other".',
     "",

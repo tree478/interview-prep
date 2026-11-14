@@ -3,6 +3,7 @@ import type {
   MatchResult,
   PostingExtraction,
   RequirementCheck,
+  RoleType,
 } from "../types";
 import { canonicalize } from "./skills";
 
@@ -291,6 +292,10 @@ function hardMismatchReason(
   const gradYear = checks.find((check) => check.name === "grad_year");
   if (gradYear && !gradYear.passed) reasons.push(gradYear.detail);
   return reasons.length > 0 ? reasons.join("; ") : null;
+}
+
+export function isFeedRole(roleType: RoleType): boolean {
+  return roleType !== "other";
 }
 
 function feedRank(item: FeedItem): number {

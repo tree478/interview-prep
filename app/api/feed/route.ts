@@ -1,4 +1,4 @@
-import { compareFeedItems } from "@/lib/match/score";
+import { compareFeedItems, isFeedRole } from "@/lib/match/score";
 import { createClient } from "@/lib/supabase/server";
 import {
   feedItemSchema,
@@ -181,6 +181,7 @@ export async function GET(request: Request): Promise<Response> {
       };
       const parsed = feedItemSchema.safeParse(candidate);
       if (!parsed.success) continue;
+      if (!isFeedRole(parsed.data.job.roleType)) continue;
       if (
         filters.location &&
         !locationHits(parsed.data.job.location, extracted.locations, filters.location)
