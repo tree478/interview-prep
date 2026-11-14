@@ -3,13 +3,13 @@
 // Every page calls these functions instead of calling fetch() itself. Each
 // function either returns mock data from mocks/*.json or calls the real API
 // route, depending on NEXT_PUBLIC_USE_MOCKS. To switch the whole app to the
-// real backend, set NEXT_PUBLIC_USE_MOCKS=false in .env.local.
+// real backend, set NEXT_PUBLIC_USE_MOCKS=false in .env.local. A few calls
+// whose routes are finished pass `live: true` and always use the real route.
 //
 // Every response, mock or real, is checked with the zod schema from
 // lib/types.ts. If the backend sends a different shape than we expect, we get
 // a clear error here instead of a confusing crash deep inside a component.
 
-import { createBrowserClient } from "@supabase/ssr";
 import { z } from "zod";
 import {
   applicationSchema,
@@ -17,16 +17,17 @@ import {
   botRunSchema,
   experienceRowSchema,
   feedItemSchema,
+  gapsResponseSchema,
   interviewQuestionSchema,
   parsedResumeSchema,
   profileRowSchema,
   starFeedbackSchema,
   tailorResultSchema,
-  umassResourceSchema,
   type RoleType,
   type Sponsorship,
   type Stage,
 } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
 
 import applicationsMock from "@/mocks/applications.json";
 import atsMock from "@/mocks/ats.json";
@@ -42,39 +43,45 @@ export const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS !== "false";
 
 // Route response wrappers. These compose the shared schemas from lib/types.ts
 // into the exact response shapes listed in TASKS.md §2.
-// TODO(types): ask Miranda to move these into lib/types.ts.
+// TODO(types): ask Miranda to move these into lib/types.ts
+// (resumeUploadSchema, okSchema, runIdSchema, matchRefreshSchema).
 const resumeUploadSchema = z.object({
   resumeId: z.string(),
   parsed: parsedResumeSchema,
   ats: atsReportSchema,
 });
-const gapsResponseSchema = z.object({
-  gaps: z.array(
-    z.object({ skill: z.string(), resources: z.array(umassResourceSchema) }),
-  ),
-});
-export type GapsResponse = z.infer<typeof gapsResponseSchema>;
 
 const okSchema = z.object({ ok: z.literal(true) });
 const runIdSchema = z.object({ runId: z.string() });
+const matchRefreshSchema = z.object({ updated: z.number() });
 
 /** Thrown when a request fails. `message` is safe to show to the user. */
-export class ApiError extends Error {}
+export class ApiError extends Error {
+  /** HTTP status when the error came from a route (e.g. 401), so pages can react to it. */
+  constructor(message: string, readonly status?: number) {
+    super(message);
+  }
+}
+
+const LOGGED_OUT_MESSAGE = "You're logged out. Log in again to continue.";
 
 const MOCK_DELAY_MS = 400;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Core helper. In mock mode, waits a moment (so loading states are visible)
- * and returns `mock`. Otherwise calls the real route. Either way, the result
- * is validated with `schema`.
+ * and returns `mock`. Otherwise calls the real route. `live: true` skips the
+ * mock and always calls the real route. Either way, the result is validated
+ * with `schema`.
  */
 async function call<T>(
   schema: z.ZodType<T>,
   path: string,
-  options: { method?: "GET" | "POST" | "PATCH"; body?: unknown; mock: unknown },
+  options:
+    | { method?: "GET" | "POST" | "PATCH"; body?: unknown; mock: unknown; live?: false }
+    | { method?: "GET" | "POST" | "PATCH"; body?: unknown; live: true },
 ): Promise<T> {
-  if (USE_MOCKS) {
+  if (USE_MOCKS && !options.live) {
     await sleep(MOCK_DELAY_MS);
     return parseOrThrow(schema, options.mock, path);
   }
@@ -93,11 +100,13 @@ async function call<T>(
   // Our routes return { error: string } on failure (CLAUDE.md rule).
   const json: unknown = await res.json().catch(() => null);
   if (!res.ok) {
+    // 401 means no valid session (routes say "Not signed in"); say what to do instead.
+    if (res.status === 401) throw new ApiError(LOGGED_OUT_MESSAGE, 401);
     const message =
       json && typeof json === "object" && "error" in json && typeof json.error === "string"
         ? json.error
         : `Request failed (${res.status})`;
-    throw new ApiError(message);
+    throw new ApiError(message, res.status);
   }
   return parseOrThrow(schema, json, path);
 }
@@ -147,20 +156,21 @@ export async function getFeedItem(jobId: string) {
   return item;
 }
 
+// Always real (live: true), even with mocks on: Miranda's POST /api/match is
+// finished, and a mocked rescore would hide whether the saved profile works.
 export function refreshMatches() {
-  return call(z.object({ updated: z.number() }), "/api/match", {
-    method: "POST",
-    body: {},
-    mock: { updated: feedMock.length },
-  });
+  return call(matchRefreshSchema, "/api/match", { method: "POST", body: {}, live: true });
 }
 
 // ---------------------------------------------------------------- resume
 
+// Always real (live: true), even with mocks on: POST /api/resume is finished,
+// and only the real route stores the PDF and actually reads the student's résumé.
+// It needs a signed-in user (401 "Not signed in" otherwise).
 export function uploadResume(file: File) {
   const form = new FormData();
   form.append("file", file);
-  return call(resumeUploadSchema, "/api/resume", { method: "POST", body: form, mock: resumeMock });
+  return call(resumeUploadSchema, "/api/resume", { method: "POST", body: form, live: true });
 }
 
 // ---------------------------------------------------------------- job detail
@@ -254,12 +264,9 @@ const SUPABASE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KE
 
 export const AUTH_ENABLED = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
 
-// TODO(supabase): move to lib/supabase/client.ts once it exists (owner: Miranda).
-// createBrowserClient returns the same instance on every call in the browser,
-// and stores the session in cookies so the server (proxy.ts, API routes) sees it.
-function browserSupabase() {
-  return createBrowserClient(SUPABASE_URL!, SUPABASE_PUBLISHABLE_KEY!);
-}
+// createClient() (lib/supabase/client.ts) keeps the session in cookies so the
+// server (proxy.ts, API routes) sees it. It throws if the Supabase values are
+// missing, so every function below checks AUTH_ENABLED before calling it.
 
 /** Turns Supabase's technical auth errors into messages a student can act on. */
 function friendlyAuthError(message: string): string {
@@ -281,7 +288,7 @@ export async function signUp(input: { fullName: string; email: string; password:
     await sleep(MOCK_DELAY_MS);
     return { needsEmailConfirmation: false };
   }
-  const { data, error } = await browserSupabase().auth.signUp({
+  const { data, error } = await createClient().auth.signUp({
     email: input.email.trim(),
     password: input.password,
     // The DB trigger copies full_name from here into the new profiles row.
@@ -297,7 +304,7 @@ export async function signIn(input: { email: string; password: string }) {
     await sleep(MOCK_DELAY_MS);
     return;
   }
-  const { error } = await browserSupabase().auth.signInWithPassword({
+  const { error } = await createClient().auth.signInWithPassword({
     email: input.email.trim(),
     password: input.password,
   });
@@ -306,7 +313,7 @@ export async function signIn(input: { email: string; password: string }) {
 
 export async function signOut() {
   if (!AUTH_ENABLED) return;
-  const { error } = await browserSupabase().auth.signOut();
+  const { error } = await createClient().auth.signOut();
   if (error) throw new ApiError("Could not log out. Please try again.");
 }
 
@@ -337,8 +344,8 @@ export type ExperienceInsert = {
 };
 
 async function currentUserId(): Promise<string> {
-  const { data, error } = await browserSupabase().auth.getUser();
-  if (error || !data.user) throw new ApiError("You're logged out. Log in again to continue.");
+  const { data, error } = await createClient().auth.getUser();
+  if (error || !data.user) throw new ApiError(LOGGED_OUT_MESSAGE, 401);
   return data.user.id;
 }
 
@@ -348,7 +355,7 @@ export async function getMyProfile() {
     await sleep(MOCK_DELAY_MS);
     return mockProfile();
   }
-  const supabase = browserSupabase();
+  const supabase = createClient();
   const userId = await currentUserId();
   const [profileRes, experiencesRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("user_id", userId).single(),
@@ -373,7 +380,7 @@ export async function saveMyProfile(profile: ProfileUpdate, buildExperiences: (u
     await sleep(MOCK_DELAY_MS);
     return;
   }
-  const supabase = browserSupabase();
+  const supabase = createClient();
   const userId = await currentUserId();
 
   const profileRes = await supabase.from("profiles").update(profile).eq("user_id", userId);

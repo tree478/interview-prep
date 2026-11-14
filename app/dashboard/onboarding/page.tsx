@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 type Step =
   | { name: "upload" }
   | { name: "reading" }
-  | { name: "error"; message: string }
+  | { name: "error"; message: string; loggedOut: boolean }
   | { name: "review"; draft: ProfileDraft; fromResume: boolean; missingSections: AtsReport["missingSections"] };
 
 export default function OnboardingPage() {
@@ -53,7 +53,8 @@ export default function OnboardingPage() {
     } catch (err) {
       // ApiError messages are written for students; anything else (e.g. no network) gets a generic one.
       const message = err instanceof ApiError ? err.message : "We couldn't read that résumé. Check your connection and try again.";
-      setStep({ name: "error", message });
+      // 401: the session expired. Another file won't help, so the screen offers "Log in again" instead.
+      setStep({ name: "error", message, loggedOut: err instanceof ApiError && err.status === 401 });
     }
   }
 
@@ -111,7 +112,13 @@ export default function OnboardingPage() {
           <p className="font-medium text-destructive">We couldn&apos;t read your résumé</p>
           <p className="max-w-md text-sm text-muted-foreground">{step.message}</p>
           <div className="mt-2 flex flex-wrap justify-center gap-2">
-            <Button onClick={() => setStep({ name: "upload" })}>Try another file</Button>
+            {step.loggedOut ? (
+              <Button asChild>
+                <Link href="/login">Log in again</Link>
+              </Button>
+            ) : (
+              <Button onClick={() => setStep({ name: "upload" })}>Try another file</Button>
+            )}
             <Button
               variant="outline"
               onClick={() => setStep({ name: "review", draft: emptyDraft(profile.full_name), fromResume: false, missingSections: [] })}

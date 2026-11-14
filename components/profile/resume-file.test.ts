@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_RESUME_BYTES, checkResumeFile } from "./resume-file";
+import { MAX_RESUME_BYTES, MAX_RESUME_MB, checkResumeFile } from "./resume-file";
 
 const pdf = (overrides: Partial<{ name: string; type: string; size: number }> = {}) => ({
   name: "resume.pdf",
@@ -28,6 +28,6 @@ describe("checkResumeFile", () => {
 
   it("allows exactly the limit and rejects anything bigger", () => {
     expect(checkResumeFile(pdf({ size: MAX_RESUME_BYTES }))).toBeNull();
-    expect(checkResumeFile(pdf({ size: MAX_RESUME_BYTES + 1 }))).toMatch(/over 5 MB/);
+    expect(checkResumeFile(pdf({ size: MAX_RESUME_BYTES + 1 }))).toMatch(`over ${MAX_RESUME_MB} MB`);
   });
 });

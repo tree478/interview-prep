@@ -2,7 +2,7 @@
 // Pure function (no React, no browser APIs beyond reading name/type/size),
 // so it's unit tested in resume-file.test.ts.
 
-export const MAX_RESUME_MB = 5;
+export const MAX_RESUME_MB = 8; // same limit as POST /api/resume
 export const MAX_RESUME_BYTES = MAX_RESUME_MB * 1024 * 1024;
 
 /** Returns an error message to show the student, or null if the file is fine. */
