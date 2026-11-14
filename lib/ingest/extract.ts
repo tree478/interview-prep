@@ -51,6 +51,8 @@ export interface ExtractPendingResult {
   errors: string[];
   /** A job hit a rate limit: it was left as it was (no attempt counted) and no more batches were started. */
   rateLimited: boolean;
+  /** First rate-limit error text seen (for logging; may be long). */
+  rateLimitReason?: string;
 }
 
 export async function extractPending(
@@ -99,6 +101,7 @@ export async function extractPending(
   let extracted = 0;
   let failed = 0;
   let rateLimited = false;
+  let rateLimitReason: string | undefined;
   for (let i = 0; i < jobs.length; i += batchSize) {
     if (rateLimited) break;
     if (opts.deadline !== undefined && Date.now() > opts.deadline - BATCH_HEADROOM_MS) {
@@ -133,6 +136,7 @@ export async function extractPending(
         } else if (isRateLimitError(res.reason)) {
           // not the job's fault: leave it as it was, count no attempt
           rateLimited = true;
+          rateLimitReason ??= res.reason instanceof Error ? res.reason.message : String(res.reason);
         } else {
           failed++;
           const msg = res.reason instanceof Error ? res.reason.message : String(res.reason);
@@ -145,5 +149,5 @@ export async function extractPending(
       }),
     );
   }
-  return { extracted, failed, errors, rateLimited };
+  return { extracted, failed, errors, rateLimited, rateLimitReason };
 }

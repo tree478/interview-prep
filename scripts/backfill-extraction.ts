@@ -94,6 +94,7 @@ async function main() {
         break;
       }
       const wait = BACKOFF_MS[Math.min(backoffs - 1, BACKOFF_MS.length - 1)];
+      console.log(`  reason: ${safe(res.rateLimitReason ?? '').replace(/\s+/g, ' ').slice(0, 900)}`);
       console.log(`  rate limited, backing off ${wait / 1000}s (${backoffs}/${MAX_BACKOFFS})`);
       await sleep(wait);
       continue;
