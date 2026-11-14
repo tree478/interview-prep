@@ -323,7 +323,7 @@ The order within each person's section is the build order.
   - `lib/ingest/dedupe.ts`: skip if (`source`, `external_id`) exists. Also skip if normalized (title + company + location) exists (lowercase, collapse whitespace, strip punctuation).
   - **Done when:** a dry-run script prints counts per company, and re-running adds 0 duplicates.
 
-- [ ] **C-4 — Grok client + company selection + role filter** · JOB-3, JOB-3a, NFR Privacy · depends on: C-3
+- [x] **C-4 — Grok client + company selection + role filter** · JOB-3, JOB-3a, NFR Privacy · depends on: C-3
   - `lib/ingest/grok.ts`: xAI API call with JSON output + zod + one retry (same pattern as Miranda's Gemini helper, your own file).
   - `selectCompanies()`: input = companies table (name, source, last_checked_at, last_postings_found) + Miranda's aggregate save/apply counts. **No resume text, no user ids.** Output = up to 10 `{ company, reason }`. Then force-add any company not checked in 3+ days. On Grok failure/invalid JSON → fall back to the 10 least recently checked, mark `fallback: true` and log an error.
   - `filterRoles(postings)`: Grok labels each title/location as `internship` / `new_grad` / `other`. Keep internship + new_grad. Batch titles only (cheap). On failure, fall back to a keyword filter (intern, co-op, new grad, entry level, university, graduate).
