@@ -252,7 +252,7 @@ The order within each person's section is the build order.
 
 > Take **Cursor Agent-mode screenshots** throughout the day (SpaceXSI prize) and drop them in the team folder for Soumya. Your AI-core work is the strongest evidence that Cursor is the team's core agent.
 
-- [ ] **B-1 — Schema, RLS, types, skills seed (CONTRACTS GATE, highest priority)** · PRD §7.2, NFR Privacy, MATCH-2 · depends on: setup · **target Sat 11 am**
+- [x] **B-1 — Schema, RLS, types, skills seed (CONTRACTS GATE, highest priority)** · PRD §7.2, NFR Privacy, MATCH-2 · depends on: setup · **target Sat 11 am**
   - Migration for every table in PRD §7.2, plus: `bot_runs.kind` (`scout`/`courses`), `bot_runs.status`, `bot_runs.course_stats jsonb`, `bot_runs.jobs_extracted int`, `jobs.role_type`, `jobs.extraction_attempts int`, `matches` unique (`user_id`, `job_id`), `applications` unique (`user_id`, `job_id`), `jobs` unique (`source`, `external_id`), `umass_resources` unique (`type`, `name`).
   - RLS: `profiles`, `experiences`, `resumes`, `matches`, `applications`, `tailorings`, `interview_sessions` are readable/writable only by `auth.uid() = user_id`. `jobs`, `companies`, `skills`, `umass_resources`, `bot_runs`, `company_briefs` are readable by authenticated users and writable only by the service role.
   - Trigger on `auth.users` insert: reject emails not ending in `@umass.edu` (AUTH-1, server-side). Trigger: create a `profiles` row with `full_name` from user metadata.
