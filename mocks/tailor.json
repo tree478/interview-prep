@@ -1,0 +1,41 @@
+{
+  "tailoringId": "tailor-01",
+  "diffs": [
+    {
+      "id": "diff-1",
+      "experienceIndex": 0,
+      "before": "Wrote Python scripts to automate laptop imaging for the loaner program",
+      "after": "Automated laptop imaging for the loaner program by writing Python scripts",
+      "status": "proposed"
+    },
+    {
+      "id": "diff-2",
+      "experienceIndex": 0,
+      "before": "Documented common fixes in the internal knowledge base",
+      "after": "Documented recurring technical fixes in the internal knowledge base for the support team",
+      "status": "proposed"
+    },
+    {
+      "id": "diff-3",
+      "experienceIndex": 1,
+      "before": "Built a data pipeline in Pandas to clean sensor logs from field tests",
+      "after": "Built a Pandas data pipeline that cleaned and prepared sensor logs from field tests for analysis",
+      "status": "proposed"
+    },
+    {
+      "id": "diff-4",
+      "experienceIndex": 1,
+      "before": "Analyzed experiment results with SQL queries and presented findings to the lab",
+      "after": "Queried experiment results with SQL and presented data-driven findings to the lab",
+      "status": "proposed"
+    }
+  ],
+  "blocked": [
+    {
+      "before": "Resolved 40+ weekly support tickets for students and faculty using ServiceNow",
+      "attempted": "Resolved 40+ weekly support tickets using ServiceNow, cutting average response time by 30%",
+      "reason": "Added a number not in the original bullet: 30%"
+    }
+  ],
+  "rejectedCount": 1
+}

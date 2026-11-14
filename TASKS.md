@@ -190,18 +190,18 @@ The order within each person's section is the build order.
 
 ### Brody (A) — Frontend / UX · Claude Code
 
-- [ ] **A-1 — Mocks + app shell** · PRD §4 · depends on: nothing
+- [x] **A-1 — Mocks + app shell** · PRD §4 · depends on: nothing
   - `mocks/` with one JSON file per contract in §2: 12 `FeedItem`s (include 1 hard-mismatch, 1 N/A, scores spread 30–90%), 1 `ParsedResume`, gaps for 3 skills (courses + 1 lab with faculty), 1 `AtsReport` missing Skills, 1 `TailorResult` with 4 diffs + 1 blocked ("added a percentage"), 6 `Application`s across stages, 3 `BotRun`s.
   - `lib/api-client.ts` is not yours. Put a fetch wrapper in `components/lib/api.ts` with a `USE_MOCKS` flag (env `NEXT_PUBLIC_USE_MOCKS`) so every page switches from mocks to real routes with one change.
   - Dashboard layout: sidebar/nav with Feed, Tracker, Profile, Bot activity, Interview. Use shadcn/ui.
   - **Done when:** every page route exists and renders mock data. `npm run build` passes.
 
-- [ ] **A-2 — Sign-up + log-in** · AUTH-1, AUTH-2 · depends on: setup (Supabase client)
+- [x] **A-2 — Sign-up + log-in** · AUTH-1, AUTH-2 · depends on: setup (Supabase client)
   - Sign-up form: full name, email, password. Client-side check that the email ends in `@umass.edu`, with an inline error. Miranda's DB trigger (B-1) enforces it server-side too.
   - Log-in form. Session persists (Supabase SSR cookies). Middleware redirects logged-out users from `/dashboard/**` to `/login`.
   - **Done when:** a `@umass.edu` user can sign up, log out and log back in. `test@gmail.com` is refused with a clear message.
 
-- [ ] **A-3 — Resume upload + autofill review screen** · AUTH-3, AUTH-4, AUTH-5, PROF-1 · depends on: A-2, contract (real: B-3)
+- [x] **A-3 — Resume upload + autofill review screen** · AUTH-3, AUTH-4, AUTH-5, PROF-1 · depends on: A-2, contract (real: B-3)
   - After sign-up: PDF drop zone → `POST /api/resume` → loading state ("Reading your resume…", can take up to 20 s) → editable form prefilled from `ParsedResume`.
   - Sections: Academics (year, majors, minors, honors, clubs + e-board role), Experiences (add/remove/edit, bullets editable), Skills (chips, top 20 + "Show all", add/remove), Interests (max 10, enforce).
   - Save writes `profiles` + `experiences` via the Supabase client (RLS protects it), then calls `POST /api/match`, then routes to the feed.

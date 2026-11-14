@@ -1,0 +1,26 @@
+[
+  {
+    "id": "app-1", "stage": "saved", "deadline": "2026-11-28", "deadlineSource": "posting", "matchScore": 81, "updatedAt": "2026-11-13T18:00:00Z",
+    "job": { "id": "job-02", "company": "Wayfair", "title": "Machine Learning Intern", "location": "Boston, MA", "url": "https://boards.greenhouse.io/wayfair", "roleType": "internship", "sponsorship": "yes", "postedAt": "2026-11-09", "deadline": "2026-11-28" }
+  },
+  {
+    "id": "app-2", "stage": "saved", "deadline": null, "deadlineSource": null, "matchScore": 74, "updatedAt": "2026-11-13T17:00:00Z",
+    "job": { "id": "job-03", "company": "Datadog", "title": "Software Engineer Intern, Summer 2027", "location": "New York, NY", "url": "https://boards.greenhouse.io/datadog", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-08", "deadline": null }
+  },
+  {
+    "id": "app-3", "stage": "saved", "deadline": "2026-12-15", "deadlineSource": "posting", "matchScore": 69, "updatedAt": "2026-11-13T16:00:00Z",
+    "job": { "id": "job-04", "company": "Toast", "title": "Frontend Engineering Intern", "location": "Boston, MA", "url": "https://boards.greenhouse.io/toast", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-11", "deadline": "2026-12-15" }
+  },
+  {
+    "id": "app-4", "stage": "applied", "deadline": "2026-11-20", "deadlineSource": "user", "matchScore": 88, "updatedAt": "2026-11-12T15:00:00Z",
+    "job": { "id": "job-01", "company": "HubSpot", "title": "Software Engineering Intern, Data Platform", "location": "Cambridge, MA", "url": "https://boards.greenhouse.io/hubspot", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-10", "deadline": "2026-12-01" }
+  },
+  {
+    "id": "app-5", "stage": "interviewing", "deadline": "2026-11-18", "deadlineSource": "user", "matchScore": 57, "updatedAt": "2026-11-11T14:00:00Z",
+    "job": { "id": "job-08", "company": "Rapid7", "title": "Security Engineering Intern", "location": "Boston, MA", "url": "https://boards.greenhouse.io/rapid7", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-12", "deadline": "2026-12-10" }
+  },
+  {
+    "id": "app-6", "stage": "offer", "deadline": "2026-11-30", "deadlineSource": "user", "matchScore": 63, "updatedAt": "2026-11-10T13:00:00Z",
+    "job": { "id": "job-06", "company": "Klaviyo", "title": "Data Science Co-op", "location": "Boston, MA", "url": "https://jobs.lever.co/klaviyo", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-06", "deadline": "2026-12-05" }
+  }
+]

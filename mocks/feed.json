@@ -1,0 +1,175 @@
+[
+  {
+    "job": { "id": "job-01", "company": "HubSpot", "title": "Software Engineering Intern, Data Platform", "location": "Cambridge, MA", "url": "https://boards.greenhouse.io/hubspot", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-10", "deadline": "2026-12-01" },
+    "match": {
+      "score": 88,
+      "covered": ["Python", "SQL", "Git", "Java"],
+      "missing": ["Distributed Systems"],
+      "preferredCovered": ["Docker"],
+      "preferredMissing": ["Kafka"],
+      "checks": [
+        { "name": "major", "passed": true, "detail": "Computer Science matches" },
+        { "name": "grad_year", "passed": true, "detail": "Graduating 2028, posting wants 2027–2028" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-02", "company": "Wayfair", "title": "Machine Learning Intern", "location": "Boston, MA", "url": "https://boards.greenhouse.io/wayfair", "roleType": "internship", "sponsorship": "yes", "postedAt": "2026-11-09", "deadline": "2026-11-28" },
+    "match": {
+      "score": 81,
+      "covered": ["Python", "Pandas", "SQL"],
+      "missing": ["Machine Learning", "Statistics"],
+      "preferredCovered": ["NumPy"],
+      "preferredMissing": ["PyTorch"],
+      "checks": [
+        { "name": "major", "passed": true, "detail": "Computer Science matches" },
+        { "name": "location", "passed": true, "detail": "Boston is in your preferred locations" },
+        { "name": "sponsorship", "passed": true, "detail": "Posting sponsors visas" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-03", "company": "Datadog", "title": "Software Engineer Intern, Summer 2027", "location": "New York, NY", "url": "https://boards.greenhouse.io/datadog", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-08", "deadline": null },
+    "match": {
+      "score": 74,
+      "covered": ["Go", "Linux", "Git"],
+      "missing": ["Kubernetes"],
+      "preferredCovered": [],
+      "preferredMissing": ["AWS"],
+      "checks": [
+        { "name": "location", "passed": false, "detail": "New York is not in your preferred locations" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-04", "company": "Toast", "title": "Frontend Engineering Intern", "location": "Boston, MA", "url": "https://boards.greenhouse.io/toast", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-11", "deadline": "2026-12-15" },
+    "match": {
+      "score": 69,
+      "covered": ["JavaScript", "HTML", "CSS"],
+      "missing": ["React", "TypeScript"],
+      "preferredCovered": ["Git"],
+      "preferredMissing": [],
+      "checks": [
+        { "name": "location", "passed": true, "detail": "Boston is in your preferred locations" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-05", "company": "Anduril", "title": "Embedded Software Intern", "location": "Costa Mesa, CA", "url": "https://boards.greenhouse.io/anduril", "roleType": "internship", "sponsorship": "no", "postedAt": "2026-11-07", "deadline": "2026-11-30" },
+    "match": {
+      "score": 35,
+      "covered": ["C", "C++", "Linux"],
+      "missing": ["Embedded Systems"],
+      "preferredCovered": [],
+      "preferredMissing": ["Rust"],
+      "checks": [
+        { "name": "sponsorship", "passed": false, "detail": "You need sponsorship; posting says it won't sponsor" },
+        { "name": "location", "passed": false, "detail": "Costa Mesa is not in your preferred locations" }
+      ],
+      "hardMismatch": "Needs sponsorship; posting won't sponsor"
+    }
+  },
+  {
+    "job": { "id": "job-06", "company": "Klaviyo", "title": "Data Science Co-op", "location": "Boston, MA", "url": "https://jobs.lever.co/klaviyo", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-06", "deadline": "2026-12-05" },
+    "match": {
+      "score": 63,
+      "covered": ["Python", "SQL"],
+      "missing": ["Statistics", "R"],
+      "preferredCovered": ["Pandas"],
+      "preferredMissing": ["Tableau"],
+      "checks": [
+        { "name": "major", "passed": true, "detail": "Computer Science matches" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-07", "company": "Palantir", "title": "Forward Deployed Engineer, New Grad", "location": "Washington, DC", "url": "https://jobs.lever.co/palantir", "roleType": "new_grad", "sponsorship": "unknown", "postedAt": "2026-11-05", "deadline": null },
+    "match": {
+      "score": 30,
+      "covered": ["Java"],
+      "missing": ["Distributed Systems", "TypeScript"],
+      "preferredCovered": [],
+      "preferredMissing": [],
+      "checks": [
+        { "name": "grad_year", "passed": false, "detail": "Posting wants 2026 graduates; you graduate 2028" }
+      ],
+      "hardMismatch": "Graduation year 2028 is outside the posting's 2026 window"
+    }
+  },
+  {
+    "job": { "id": "job-08", "company": "Rapid7", "title": "Security Engineering Intern", "location": "Boston, MA", "url": "https://boards.greenhouse.io/rapid7", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-12", "deadline": "2026-12-10" },
+    "match": {
+      "score": 57,
+      "covered": ["Python", "Linux"],
+      "missing": ["Computer Security", "Networking"],
+      "preferredCovered": [],
+      "preferredMissing": ["Bash"],
+      "checks": [
+        { "name": "location", "passed": true, "detail": "Boston is in your preferred locations" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-09", "company": "Duolingo", "title": "Software Engineer Intern, Learning", "location": "Pittsburgh, PA", "url": "https://boards.greenhouse.io/duolingo", "roleType": "internship", "sponsorship": "yes", "postedAt": "2026-11-04", "deadline": "2026-11-25" },
+    "match": {
+      "score": 52,
+      "covered": ["Python"],
+      "missing": ["Kotlin", "Machine Learning"],
+      "preferredCovered": ["Git"],
+      "preferredMissing": ["Swift"],
+      "checks": [
+        { "name": "location", "passed": false, "detail": "Pittsburgh is not in your preferred locations" },
+        { "name": "sponsorship", "passed": true, "detail": "Posting sponsors visas" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-10", "company": "MathWorks", "title": "Engineering Development Group, New Grad", "location": "Natick, MA", "url": "https://boards.greenhouse.io/mathworks", "roleType": "new_grad", "sponsorship": "unknown", "postedAt": "2026-11-03", "deadline": null },
+    "match": {
+      "score": 46,
+      "covered": ["C++"],
+      "missing": ["MATLAB", "Algorithms"],
+      "preferredCovered": [],
+      "preferredMissing": [],
+      "checks": [
+        { "name": "major", "passed": true, "detail": "Computer Science matches" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-11", "company": "Robinhood", "title": "Backend Engineering Intern", "location": "Menlo Park, CA", "url": "https://boards.greenhouse.io/robinhood", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-02", "deadline": "2026-12-20" },
+    "match": {
+      "score": 41,
+      "covered": ["Python"],
+      "missing": ["Go", "PostgreSQL", "Distributed Systems"],
+      "preferredCovered": [],
+      "preferredMissing": ["Kafka"],
+      "checks": [
+        { "name": "location", "passed": false, "detail": "Menlo Park is not in your preferred locations" }
+      ],
+      "hardMismatch": null
+    }
+  },
+  {
+    "job": { "id": "job-12", "company": "Vertex Pharmaceuticals", "title": "Research Computing Intern", "location": "Boston, MA", "url": "https://jobs.lever.co/vertex", "roleType": "internship", "sponsorship": "unknown", "postedAt": "2026-11-01", "deadline": null },
+    "match": {
+      "score": null,
+      "covered": [],
+      "missing": [],
+      "preferredCovered": ["Python"],
+      "preferredMissing": [],
+      "checks": [
+        { "name": "location", "passed": true, "detail": "Boston is in your preferred locations" }
+      ],
+      "hardMismatch": null
+    }
+  }
+]
