@@ -30,8 +30,8 @@ export function SignupForm() {
         setConfirmationSentTo(form.values.email.trim());
         return;
       }
-      // TODO(A-3): send new users to the résumé upload step instead.
-      router.push("/dashboard");
+      // New students upload their résumé next (A-3).
+      router.push("/dashboard/onboarding");
       router.refresh(); // re-run proxy.ts and server code with the new session cookie
     } catch (err) {
       setServerError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

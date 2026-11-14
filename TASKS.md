@@ -201,7 +201,7 @@ The order within each person's section is the build order.
   - Log-in form. Session persists (Supabase SSR cookies). Middleware redirects logged-out users from `/dashboard/**` to `/login`.
   - **Done when:** a `@umass.edu` user can sign up, log out and log back in. `test@gmail.com` is refused with a clear message.
 
-- [ ] **A-3 — Resume upload + autofill review screen** · AUTH-3, AUTH-4, AUTH-5, PROF-1 · depends on: A-2, contract (real: B-3)
+- [x] **A-3 — Resume upload + autofill review screen** · AUTH-3, AUTH-4, AUTH-5, PROF-1 · depends on: A-2, contract (real: B-3)
   - After sign-up: PDF drop zone → `POST /api/resume` → loading state ("Reading your resume…", can take up to 20 s) → editable form prefilled from `ParsedResume`.
   - Sections: Academics (year, majors, minors, honors, clubs + e-board role), Experiences (add/remove/edit, bullets editable), Skills (chips, top 20 + "Show all", add/remove), Interests (max 10, enforce).
   - Save writes `profiles` + `experiences` via the Supabase client (RLS protects it), then calls `POST /api/match`, then routes to the feed.

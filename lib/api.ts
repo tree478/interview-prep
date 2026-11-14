@@ -15,9 +15,11 @@ import {
   applicationSchema,
   atsReportSchema,
   botRunSchema,
+  experienceRowSchema,
   feedItemSchema,
   interviewQuestionSchema,
   parsedResumeSchema,
+  profileRowSchema,
   starFeedbackSchema,
   tailorResultSchema,
   umassResourceSchema,
@@ -306,4 +308,118 @@ export async function signOut() {
   if (!AUTH_ENABLED) return;
   const { error } = await browserSupabase().auth.signOut();
   if (error) throw new ApiError("Could not log out. Please try again.");
+}
+
+// ---------------------------------------------------------------- profile (A-3, A-4)
+//
+// The profile is read and written straight from the browser with the user's
+// own Supabase session (no API route), so row-level security guarantees each
+// student can only touch their own rows.
+
+export type ProfileUpdate = {
+  full_name: string;
+  year: string | null;
+  majors: string[];
+  minors: string[];
+  honors: string[];
+  clubs: { name: string; role: string | null }[];
+  skills: string[];
+  interests: string[];
+};
+export type ExperienceInsert = {
+  user_id: string;
+  company: string;
+  position: string;
+  start_date: string | null;
+  end_date: string | null;
+  bullets: string[];
+  skills: string[];
+};
+
+async function currentUserId(): Promise<string> {
+  const { data, error } = await browserSupabase().auth.getUser();
+  if (error || !data.user) throw new ApiError("You're logged out. Log in again to continue.");
+  return data.user.id;
+}
+
+/** The signed-in student's profile row and experiences. */
+export async function getMyProfile() {
+  if (!AUTH_ENABLED) {
+    await sleep(MOCK_DELAY_MS);
+    return mockProfile();
+  }
+  const supabase = browserSupabase();
+  const userId = await currentUserId();
+  const [profileRes, experiencesRes] = await Promise.all([
+    supabase.from("profiles").select("*").eq("user_id", userId).single(),
+    supabase.from("experiences").select("*").eq("user_id", userId),
+  ]);
+  if (profileRes.error) throw new ApiError("Could not load your profile.");
+  if (experiencesRes.error) throw new ApiError("Could not load your experiences.");
+  return {
+    userId,
+    profile: parseOrThrow(profileRowSchema, profileRes.data, "profiles"),
+    experiences: parseOrThrow(z.array(experienceRowSchema), experiencesRes.data, "experiences"),
+  };
+}
+
+/**
+ * Saves the profile fields and replaces the student's experiences.
+ * New experience rows are inserted first and the old ones deleted only after
+ * that succeeds, so a failed save never leaves the student with none.
+ */
+export async function saveMyProfile(profile: ProfileUpdate, buildExperiences: (userId: string) => ExperienceInsert[]) {
+  if (!AUTH_ENABLED) {
+    await sleep(MOCK_DELAY_MS);
+    return;
+  }
+  const supabase = browserSupabase();
+  const userId = await currentUserId();
+
+  const profileRes = await supabase.from("profiles").update(profile).eq("user_id", userId);
+  if (profileRes.error) throw new ApiError("Could not save your profile. Please try again.");
+
+  const rows = buildExperiences(userId);
+  let keepIds: string[] = [];
+  if (rows.length) {
+    const inserted = await supabase.from("experiences").insert(rows).select("id");
+    if (inserted.error) throw new ApiError("Could not save your experiences. Please try again.");
+    keepIds = (inserted.data ?? []).map((r) => r.id as string);
+  }
+  let cleanup = supabase.from("experiences").delete().eq("user_id", userId);
+  if (keepIds.length) cleanup = cleanup.not("id", "in", `(${keepIds.join(",")})`);
+  const deleted = await cleanup;
+  if (deleted.error) throw new ApiError("Saved, but old experiences could not be removed. Try saving again.");
+}
+
+function mockProfile() {
+  const { parsed } = resumeMock;
+  return {
+    userId: "mock-user",
+    profile: parseOrThrow(profileRowSchema, {
+      user_id: "00000000-0000-4000-8000-000000000000",
+      full_name: "Sam Minuteman",
+      email: "sam@umass.edu",
+      year: parsed.academics.year,
+      majors: parsed.academics.majors,
+      minors: parsed.academics.minors,
+      honors: parsed.academics.honors,
+      clubs: parsed.academics.clubs,
+      skills: parsed.skills,
+      interests: parsed.interests,
+      needs_sponsorship: false,
+      open_to_relocation: false,
+      preferred_locations: [],
+      min_pay: null,
+    }, "mock profile"),
+    experiences: parsed.experiences.map((e, i) =>
+      parseOrThrow(experienceRowSchema, {
+        ...e,
+        id: `00000000-0000-4000-8000-00000000000${i + 1}`,
+        user_id: "00000000-0000-4000-8000-000000000000",
+        start_date: e.start_date ? `${e.start_date}-01` : null,
+        end_date: e.end_date ? `${e.end_date}-01` : null,
+      }, "mock experience"),
+    ),
+  };
 }
