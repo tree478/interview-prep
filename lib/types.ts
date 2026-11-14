@@ -58,6 +58,30 @@ export const jobSummarySchema = z.object({
 });
 export type JobSummary = z.infer<typeof jobSummarySchema>;
 
+export const postingExtractionSchema = z.object({
+  requiredSkills: z.array(z.string()),
+  preferredSkills: z.array(z.string()),
+  majors: z.array(z.string()),
+  graduation: z
+    .object({
+      startYear: z.number().int().nullable(),
+      endYear: z.number().int().nullable(),
+    })
+    .nullable(),
+  locations: z.array(z.string()),
+  remote: z.boolean(),
+  sponsorship: sponsorshipSchema,
+  pay: z
+    .object({
+      min: z.number().nullable(),
+      max: z.number().nullable(),
+      interval: z.enum(["hour", "year"]).nullable(),
+    })
+    .nullable(),
+  roleType: roleTypeSchema,
+});
+export type PostingExtraction = z.infer<typeof postingExtractionSchema>;
+
 export const requirementCheckSchema = z.object({
   name: z.enum(["major", "grad_year", "location", "sponsorship", "pay"]),
   passed: z.boolean(),
@@ -286,7 +310,7 @@ export const jobRowSchema = z.object({
   description: z.string().nullable(),
   posted_at: z.string().nullable(),
   deadline: z.string().nullable(),
-  extracted_json: z.unknown().nullable(),
+  extracted_json: postingExtractionSchema.nullable(),
   extraction_status: z.enum(["pending", "done", "failed"]),
   dropped_skills: z.array(z.string()),
   ingested_by_run_id: z.uuid().nullable(),
