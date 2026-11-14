@@ -73,6 +73,50 @@ describe("missingSections", () => {
     ].join("\n");
     expect(missingSections(text)).not.toContain("Experience");
   });
+
+  it("counts common experience headings such as TECHNICAL EXPERIENCE", () => {
+    for (const heading of [
+      "TECHNICAL EXPERIENCE",
+      "Experience",
+      "Research Experience",
+      "Employment",
+      "Work History",
+      "Internships:",
+    ]) {
+      const text = [
+        "Education",
+        "University of Massachusetts Amherst",
+        "",
+        heading,
+        "Research assistant",
+        "",
+        "Skills",
+        "Python",
+      ].join("\n");
+      expect(missingSections(text), heading).not.toContain("Experience");
+    }
+  });
+
+  it("counts skills headings when case or an ampersand differs", () => {
+    for (const heading of [
+      "SKILLS & TOOLS",
+      "Languages and Tools",
+      "Technologies",
+      "Core Competencies",
+    ]) {
+      const text = [
+        "Education",
+        "University of Massachusetts Amherst",
+        "",
+        "Work Experience",
+        "Research assistant",
+        "",
+        heading,
+        "Python",
+      ].join("\n");
+      expect(missingSections(text), heading).not.toContain("Skills");
+    }
+  });
 });
 
 describe("buildAtsReport", () => {
