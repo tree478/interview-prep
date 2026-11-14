@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isEarlyCareer } from './keywordFilter';
+import { classifyByKeyword, isEarlyCareer } from './keywordFilter';
 
 describe('isEarlyCareer', () => {
   it.each([
@@ -14,4 +14,15 @@ describe('isEarlyCareer', () => {
     'rejects %s',
     (t) => expect(isEarlyCareer(t)).toBe(false),
   );
+});
+
+describe('classifyByKeyword', () => {
+  it.each([
+    ['Software Engineering Intern', 'internship'],
+    ['Summer 2027 Co-op', 'internship'],
+    ['Software Engineer, New Grad', 'new_grad'],
+    ['University Talent Acquisition Partner', 'other'],
+    ['Internal Tools Engineer', 'other'],
+    ['Senior Software Engineer', 'other'],
+  ])('%s -> %s', (t, expected) => expect(classifyByKeyword(t)).toBe(expected));
 });
