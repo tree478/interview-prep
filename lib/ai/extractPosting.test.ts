@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { finalizeExtraction } from "./extractPosting";
+import { finalizeExtraction, promptFor } from "./extractPosting";
 
 function raw(
   overrides: Partial<Parameters<typeof finalizeExtraction>[0]> = {},
@@ -95,6 +95,23 @@ describe("finalizeExtraction", () => {
       raw({ payMin: 48, payMax: null, payInterval: null }),
     );
     expect(extraction.pay).toEqual({ min: 48, max: null, interval: null });
+  });
+
+  it("keeps a monthly interval instead of forcing hour or year", () => {
+    const { extraction } = finalizeExtraction(
+      raw({ payMin: 6000, payMax: 8000, payInterval: "month" }),
+    );
+    expect(extraction.pay).toEqual({ min: 6000, max: 8000, interval: "month" });
+  });
+
+  it("tells the model to label monthly pay as month", () => {
+    const prompt = promptFor({
+      title: "Intern",
+      company: "Acme",
+      location: null,
+      description: "Pay is $6,000 per month.",
+    });
+    expect(prompt).toContain('"month"');
   });
 
   it("sets graduation to null when both years are null", () => {

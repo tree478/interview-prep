@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FeedItem, PostingExtraction } from "../types";
-import { compareFeedItems, scoreMatch } from "./score";
+import { compareFeedItems, isFeedRole, scoreMatch } from "./score";
 
 function posting(overrides: Partial<PostingExtraction> = {}): PostingExtraction {
   return {
@@ -509,14 +509,30 @@ describe("scoreMatch", () => {
       }),
     });
 
+    const monthly = score({
+      minPay: 50000,
+      posting: posting({
+        pay: { min: 6000, max: 7000, interval: "month" },
+      }),
+    });
+
     expect(hourly.checks).toEqual([]);
     expect(hourly.score).toBe(100);
+    expect(monthly.checks).toEqual([]);
     expect(yearly.checks).toEqual([
       { name: "pay", passed: true, detail: "Pay meets minimum" },
     ]);
     expect(below.checks).toEqual([
       { name: "pay", passed: false, detail: "Pay is below your minimum" },
     ]);
+  });
+});
+
+describe("isFeedRole", () => {
+  it("hides role type other and keeps internship and new grad", () => {
+    expect(isFeedRole("other")).toBe(false);
+    expect(isFeedRole("internship")).toBe(true);
+    expect(isFeedRole("new_grad")).toBe(true);
   });
 });
 
