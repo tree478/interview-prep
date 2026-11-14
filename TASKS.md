@@ -347,7 +347,7 @@ The order within each person's section is the build order.
   - Log a `bot_runs` row with `kind: 'courses'` and `course_stats`.
   - **Done when:** the courses table is filled, every course has ≥1 skill tag, and a second run logs "unchanged".
 
-- [ ] **C-8 — Seed file with courses + hand-checked demo labs** · GAP-1, GAP-2c · depends on: C-7
+- [x] **C-8 — Seed file with courses + hand-checked demo labs** · GAP-1, GAP-2c · depends on: C-7
   - Export the synced courses to `data/umass_resources.json` (the fallback seed). **Add 3–5 CICS research labs by hand** (name, description, URL, research area, faculty names + public CICS profile URLs, canonical skill tags), picked to cover the demo posting's missing skills (e.g. ML, statistics, distributed systems). This is how P0 GAP-1 shows labs while automated lab sync (GAP-2e) stays P1. Never invent faculty or labs: copy from the real CICS pages.
   - `scripts/seed-resources.ts` upserts the file.
   - **Done when:** gaps for ML / statistics / distributed systems each return a course and a lab with faculty.
