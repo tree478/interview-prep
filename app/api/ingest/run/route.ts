@@ -17,6 +17,8 @@ const bodySchema = z.object({ trigger: z.enum(['manual', 'cron']).optional() });
 const STALE_MS = 10 * 60_000;
 
 async function start(request: Request): Promise<NextResponse> {
+  // maxDuration is 60 s from request start; leave room for the final bot_runs update.
+  const deadline = Date.now() + 50_000;
   let trigger = secretAuth(request.headers);
   if (!trigger) {
     const { user } = await getSessionUser();
@@ -66,6 +68,7 @@ async function start(request: Request): Promise<NextResponse> {
         filterRoles: (p) => filterRoles(p),
         extractor,
         now: () => new Date(),
+        deadline,
       }),
     );
     return NextResponse.json({ runId });

@@ -28,13 +28,45 @@ interface JobRow {
   description: string | null;
 }
 
+/** One batch can take ~25 s (extractPosting timeout), so stop starting batches this long before the deadline. */
+export const BATCH_HEADROOM_MS = 15_000;
+
+/** True for HTTP 429 / RESOURCE_EXHAUSTED / quota / rate-limit style errors (also looks at `cause`). */
+export function isRateLimitError(err: unknown): boolean {
+  for (let e: unknown = err, depth = 0; e != null && depth < 3; depth++) {
+    if (typeof e === 'object') {
+      const { status, code } = e as { status?: unknown; code?: unknown };
+      if (status === 429 || code === 429) return true;
+    }
+    const text = e instanceof Error ? e.message : String(e);
+    if (/\b429\b|RESOURCE_EXHAUSTED|quota|\brate\b/i.test(text)) return true;
+    e = e instanceof Error ? e.cause : undefined;
+  }
+  return false;
+}
+
+export interface ExtractPendingResult {
+  extracted: number;
+  failed: number;
+  errors: string[];
+  /** A job hit a rate limit: it was left as it was (no attempt counted) and no more batches were started. */
+  rateLimited: boolean;
+}
+
 export async function extractPending(
   db: SupabaseClient,
-  runId: string,
-  opts: { extractor: Extractor | null; limit?: number; batchSize?: number },
-): Promise<{ extracted: number; failed: number; errors: string[] }> {
+  /** Not used by extraction (ingested_by_run_id is never touched); null for scripts. */
+  runId: string | null,
+  opts: {
+    extractor: Extractor | null;
+    limit?: number;
+    batchSize?: number;
+    /** epoch ms; no batch starts within BATCH_HEADROOM_MS of this */
+    deadline?: number;
+  },
+): Promise<ExtractPendingResult> {
   void runId;
-  if (!opts.extractor) return { extracted: 0, failed: 0, errors: [SKIP_MESSAGE] };
+  if (!opts.extractor) return { extracted: 0, failed: 0, errors: [SKIP_MESSAGE], rateLimited: false };
   const run = opts.extractor;
   const limit = opts.limit ?? 40;
   const batchSize = opts.batchSize ?? 5;
@@ -49,7 +81,9 @@ export async function extractPending(
     .lt('extraction_attempts', MAX_ATTEMPTS)
     .order('id', { ascending: true })
     .limit(limit);
-  if (retry.error) return { extracted: 0, failed: 0, errors: [`extract: ${retry.error.message}`] };
+  if (retry.error) {
+    return { extracted: 0, failed: 0, errors: [`extract: ${retry.error.message}`], rateLimited: false };
+  }
   let jobs = (retry.data ?? []) as (JobRow & { extraction_attempts: number })[];
   if (jobs.length < limit) {
     const pending = await db
@@ -64,7 +98,13 @@ export async function extractPending(
 
   let extracted = 0;
   let failed = 0;
+  let rateLimited = false;
   for (let i = 0; i < jobs.length; i += batchSize) {
+    if (rateLimited) break;
+    if (opts.deadline !== undefined && Date.now() > opts.deadline - BATCH_HEADROOM_MS) {
+      errors.push(`Extraction stopped at time budget: ${jobs.length - i} left pending`);
+      break;
+    }
     const batch = jobs.slice(i, i + batchSize);
     const results = await Promise.allSettled(
       batch.map((j) =>
@@ -90,6 +130,9 @@ export async function extractPending(
             failed++;
             errors.push(`job ${j.id}: save failed: ${error.message}`);
           } else extracted++;
+        } else if (isRateLimitError(res.reason)) {
+          // not the job's fault: leave it as it was, count no attempt
+          rateLimited = true;
         } else {
           failed++;
           const msg = res.reason instanceof Error ? res.reason.message : String(res.reason);
@@ -102,5 +145,5 @@ export async function extractPending(
       }),
     );
   }
-  return { extracted, failed, errors };
+  return { extracted, failed, errors, rateLimited };
 }

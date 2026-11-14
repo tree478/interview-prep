@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { botRunSchema } from '../types';
 import { secretAuth } from './auth';
 import { toBotRun } from './botRuns';
-import { extractPending, type Extractor } from './extract';
+import { extractPending, isRateLimitError, type Extractor } from './extract';
 import { runScout, type ScoutDeps } from './runScout';
 
 // Minimal in-memory fake of the supabase query builder used by the pipeline.
@@ -171,6 +171,87 @@ describe('extractPending', () => {
     expect(res.failed).toBe(1);
     expect(res.errors[0]).toContain('job a: boom');
     expect(jobs[0]).toMatchObject({ extraction_status: 'failed', extraction_attempts: 1 });
+  });
+});
+
+describe('extractPending time budget and rate limits', () => {
+  const mk = (n: number): Row[] =>
+    Array.from({ length: n }, (_, i) => ({
+      id: `p${String(i).padStart(2, '0')}`, title: 't', company: 'c', location: null, description: '',
+      extraction_status: 'pending', extraction_attempts: 0, posted_at: null,
+    }));
+
+  it('starts no batch when the deadline is near, leaves jobs pending and says so', async () => {
+    const jobs = mk(8);
+    const ex: Extractor = vi.fn(async () => ({ extracted: {}, dropped: [] }));
+    const res = await extractPending(fakeDb({ jobs }).db, null, { extractor: ex, deadline: Date.now() + 10_000 });
+    expect(ex).not.toHaveBeenCalled();
+    expect(res.extracted).toBe(0);
+    expect(res.errors).toEqual(['Extraction stopped at time budget: 8 left pending']);
+    expect(jobs.every((j) => j.extraction_status === 'pending')).toBe(true);
+  });
+
+  it('adds no message when the deadline is far', async () => {
+    const jobs = mk(3);
+    const ex: Extractor = vi.fn(async () => ({ extracted: {}, dropped: [] }));
+    const res = await extractPending(fakeDb({ jobs }).db, null, { extractor: ex, deadline: Date.now() + 60_000 });
+    expect(res).toMatchObject({ extracted: 3, errors: [], rateLimited: false });
+  });
+
+  it('saves role_type, dropped_skills and extracted_json from the adapter result', async () => {
+    const jobs = mk(1);
+    const ex: Extractor = async () => ({ extracted: { requiredSkills: ['Python'] }, dropped: ['Foo'], roleType: 'new_grad' });
+    await extractPending(fakeDb({ jobs }).db, null, { extractor: ex });
+    expect(jobs[0]).toMatchObject({
+      extraction_status: 'done', extraction_attempts: 1, role_type: 'new_grad',
+      dropped_skills: ['Foo'], extracted_json: { requiredSkills: ['Python'] },
+    });
+  });
+
+  it('a rate-limited job stays pending with no attempt counted; later batches do not start', async () => {
+    const jobs = mk(10);
+    jobs[1].extraction_status = 'failed';
+    jobs[1].extraction_attempts = 1;
+    const ex: Extractor = vi.fn(async (j) => {
+      if (j.title === 't') throw new Error('429 RESOURCE_EXHAUSTED');
+      return { extracted: {}, dropped: [] };
+    });
+    const res = await extractPending(fakeDb({ jobs }).db, null, { extractor: ex, batchSize: 5 });
+    expect(res).toMatchObject({ extracted: 0, failed: 0, errors: [], rateLimited: true });
+    expect(ex).toHaveBeenCalledTimes(5); // second batch never started
+    expect(jobs[1]).toMatchObject({ extraction_status: 'failed', extraction_attempts: 1 });
+    expect(jobs.filter((j) => j.extraction_status === 'pending')).toHaveLength(9);
+    expect(jobs.every((j) => j.extraction_attempts <= 1)).toBe(true);
+  });
+
+  it('other errors in the same batch still fail normally and good ones are saved', async () => {
+    const jobs = mk(3);
+    jobs[0].title = 'rate';
+    jobs[1].title = 'bad';
+    const ex: Extractor = async (j) => {
+      if (j.title === 'rate') throw new Error('quota exceeded');
+      if (j.title === 'bad') throw new Error('boom');
+      return { extracted: {}, dropped: [] };
+    };
+    const res = await extractPending(fakeDb({ jobs }).db, null, { extractor: ex });
+    expect(res).toMatchObject({ extracted: 1, failed: 1, rateLimited: true });
+    expect(jobs.map((j) => j.extraction_status)).toEqual(['pending', 'failed', 'done']);
+  });
+});
+
+describe('isRateLimitError', () => {
+  it('detects 429, RESOURCE_EXHAUSTED, quota, rate (message, status, cause)', () => {
+    expect(isRateLimitError(new Error('got 429'))).toBe(true);
+    expect(isRateLimitError(new Error('RESOURCE_EXHAUSTED: slow down'))).toBe(true);
+    expect(isRateLimitError(new Error('You exceeded your current quota'))).toBe(true);
+    expect(isRateLimitError(new Error('Rate limit reached'))).toBe(true);
+    expect(isRateLimitError(Object.assign(new Error('x'), { status: 429 }))).toBe(true);
+    expect(isRateLimitError(new Error('wrapped', { cause: Object.assign(new Error('y'), { status: 429 }) }))).toBe(true);
+  });
+  it('ignores unrelated errors', () => {
+    expect(isRateLimitError(new Error('Gemini response failed validation: generated bad JSON'))).toBe(false);
+    expect(isRateLimitError(new Error('This operation was aborted'))).toBe(false);
+    expect(isRateLimitError(Object.assign(new Error('x'), { status: 500 }))).toBe(false);
   });
 });
 

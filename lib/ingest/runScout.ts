@@ -20,13 +20,18 @@ export interface ScoutDeps {
   now: () => Date;
   /** ms between company fetches; defaults to 300 */
   delayMs?: number;
+  /** epoch ms by which the run should be done; defaults to now + 50 s (Vercel maxDuration is 60 s) */
+  deadline?: number;
 }
 
 const CHUNK = 100;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
+export const RUN_BUDGET_MS = 50_000;
+
 export async function runScout(runId: string, deps: ScoutDeps): Promise<void> {
+  const deadline = deps.deadline ?? Date.now() + RUN_BUDGET_MS;
   const { db } = deps;
   const errors: string[] = [];
   let selected: SelectedCompany[] = [];
@@ -98,9 +103,10 @@ export async function runScout(runId: string, deps: ScoutDeps): Promise<void> {
       jobsAdded += data?.length ?? 0;
     }
 
-    const ex = await extractPending(db, runId, { extractor: deps.extractor, limit: 40, batchSize: 5 });
+    const ex = await extractPending(db, runId, { extractor: deps.extractor, limit: 40, batchSize: 5, deadline });
     jobsExtracted = ex.extracted;
     errors.push(...ex.errors);
+    if (ex.rateLimited) errors.push('Extraction paused: Gemini rate limit hit, affected jobs left pending');
 
     const stamp = deps.now().toISOString();
     for (const c of okCompanies) {
