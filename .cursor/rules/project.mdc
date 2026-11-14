@@ -1,0 +1,15 @@
+---
+description: UMass Career Coach project rules (mirrors CLAUDE.md)
+alwaysApply: true
+---
+
+Read and follow CLAUDE.md at the repo root. Key rules, repeated here:
+
+- Next.js App Router + TypeScript strict + Tailwind v4 + shadcn/ui (Radix). Use shadcn components before writing custom ones.
+- All shared types and zod schemas come from `lib/types.ts`. Never redefine them. Only B changes that file.
+- Stay inside your owner's folders (see CLAUDE.md). Ask before editing another owner's files.
+- Frontend fetches through one function per endpoint in `lib/api.ts`, which reads `mocks/*.json` until the real API exists.
+- Never put secrets in client components or `NEXT_PUBLIC_` variables.
+- Every Gemini output is validated with zod. Tailoring never invents skills, employers or numbers.
+- Every page needs loading, empty and error states. Forms need labels and keyboard access.
+- Small changes; `npm run build` must pass before committing.
