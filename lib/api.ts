@@ -96,13 +96,16 @@ async function call<T>(
   // Our routes return { error: string } on failure (CLAUDE.md rule).
   const json: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    // 401 means no valid session (routes say "Not signed in"); say what to do instead.
-    if (res.status === 401) throw new ApiError(LOGGED_OUT_MESSAGE, 401);
-    const message =
+    const routeError =
       json && typeof json === "object" && "error" in json && typeof json.error === "string"
         ? json.error
-        : `Request failed (${res.status})`;
-    throw new ApiError(message, res.status);
+        : undefined;
+    // Status stays on the error so a logged-out session can offer "Log in again".
+    // The message is the route's error string when the body sent one.
+    throw new ApiError(
+      routeError ?? (res.status === 401 ? LOGGED_OUT_MESSAGE : `Request failed (${res.status})`),
+      res.status,
+    );
   }
   return parseOrThrow(schema, json, path);
 }

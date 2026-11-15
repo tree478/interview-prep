@@ -15,10 +15,9 @@ export function LoadingCards({ count = 3 }: { count?: number }) {
 export function ErrorMessage({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
-      <p className="font-medium text-destructive">Something went wrong</p>
-      <p className="mt-1 text-muted-foreground">{message}</p>
+      <p className="font-medium text-destructive">{message}</p>
       {onRetry && (
-        <button onClick={onRetry} className="mt-2 text-sm font-medium underline underline-offset-4">
+        <button type="button" onClick={onRetry} className="mt-2 text-sm font-medium underline underline-offset-4">
           Try again
         </button>
       )}

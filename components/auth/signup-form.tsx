@@ -57,7 +57,7 @@ export function SignupForm() {
 
   return (
     // noValidate turns off the browser's built-in popups so our messages show instead.
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <form method="post" onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       {serverError && <FormAlert message={serverError} />}
       {!AUTH_ENABLED && <MockAuthNote />}
 

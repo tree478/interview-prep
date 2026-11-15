@@ -52,12 +52,15 @@ export function ExperienceFields({
         {exp.bullets.map((bullet, i) => (
           // Index keys are OK here: bullets are plain text inputs fully controlled by state.
           <div key={i} className="flex gap-2">
+            <Label htmlFor={`${exp.key}-bullet-${i}`} className="sr-only">
+              Bullet {i + 1}
+            </Label>
             <Textarea
-              aria-label={`Bullet ${i + 1}`}
+              id={`${exp.key}-bullet-${i}`}
               rows={2}
               value={bullet}
               onChange={(e) => setBullet(i, e.target.value)}
-              className="min-h-0 text-sm"
+              className="min-h-0 flex-1 text-sm"
             />
             <Button type="button" variant="ghost" size="sm" aria-label={`Remove bullet ${i + 1}`}
               onClick={() => set("bullets", exp.bullets.filter((_, j) => j !== i))}>
