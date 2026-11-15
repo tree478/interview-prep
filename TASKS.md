@@ -239,7 +239,7 @@ The order within each person's section is the build order.
   - Each run row: time, trigger badge (cron/manual), kind, status, companies Grok chose with the reason for each (mark fallback picks), jobs added, jobs extracted, errors (red, collapsible), course stats for course runs.
   - **Done when:** clicking Run Scout now shows a "running" row that turns into "done" with companies and reasons, without a page refresh.
 
-- [ ] **A-9 — Interview prep UI** · PREP-1, PREP-2, PREP-3 · depends on: contract (real: C-10)
+- [x] **A-9 — Interview prep UI** · PREP-1, PREP-2, PREP-3 · depends on: contract (real: C-10)
   - From a job detail page or tracker card: "Practice interview" → `/dashboard/jobs/[id]/interview`. Generate questions (behavioral and resume, labeled). Pick one → textarea → Submit → STAR card: four parts, each with a 1–5 rating and a comment, plus a suggested improvement.
   - **Done when:** works end to end on mocks, then on the real route.
 

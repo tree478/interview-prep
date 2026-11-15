@@ -90,6 +90,12 @@ export default function TrackerPage() {
                       <Link href={`/dashboard/jobs/${app.job.id}`} className="font-medium leading-snug hover:underline">
                         {app.job.title}
                       </Link>
+                      <Link
+                        href={`/dashboard/jobs/${app.job.id}/interview`}
+                        className="font-medium leading-snug hover:underline"
+                      >
+                        Practice interview
+                      </Link>
                       <p className="text-muted-foreground">
                         {app.job.company}
                         {app.matchScore !== null && ` · ${app.matchScore}% match`}
