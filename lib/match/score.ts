@@ -8,6 +8,11 @@ import type {
 import { canonicalize } from "./skills";
 
 const HOURS_PER_YEAR = 2080;
+const MONTHS_PER_YEAR = 12;
+// A missing interval is inferred from the amount. Under 1000 looks hourly,
+// under 20000 monthly, and the rest yearly.
+const HOURLY_GUESS_UNDER = 1000;
+const MONTHLY_GUESS_UNDER = 20000;
 
 export type ScoreMatchInput = {
   studentSkills: string[];
@@ -267,10 +272,18 @@ function sponsorshipCheck(
   };
 }
 
+function guessYearly(amount: number): number {
+  if (amount < HOURLY_GUESS_UNDER) return amount * HOURS_PER_YEAR;
+  if (amount < MONTHLY_GUESS_UNDER) return amount * MONTHS_PER_YEAR;
+  return amount;
+}
+
 function yearlyAmount(pay: NonNullable<PostingExtraction["pay"]>): number | null {
   if (pay.min == null || !Number.isFinite(pay.min)) return null;
-  if (pay.interval === "year" || pay.interval === null) return pay.min;
+  if (pay.interval === "year") return pay.min;
   if (pay.interval === "hour") return pay.min * HOURS_PER_YEAR;
+  if (pay.interval === "month") return pay.min * MONTHS_PER_YEAR;
+  if (pay.interval === null) return guessYearly(pay.min);
   return null;
 }
 
@@ -284,6 +297,8 @@ function payCheck(
   if (yearly == null) return null;
 
   const passed = yearly >= minPay;
+  // A guessed interval may pass. It is never recorded as a failure.
+  if (!passed && pay.interval == null) return null;
   return {
     name: "pay",
     passed,
