@@ -25,17 +25,20 @@ import {
   resumeUploadSchema,
   runIdSchema,
   starFeedbackSchema,
+  tailoringRowSchema,
   tailorResultSchema,
   type RoleType,
   type Sponsorship,
   type Stage,
   type TailorDecision,
+  type TailorResult,
 } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 
 import applicationsMock from "@/mocks/applications.json";
 import atsMock from "@/mocks/ats.json";
 import botRunsMock from "@/mocks/bot-runs.json";
+import feedMock from "@/mocks/feed.json";
 import gapsMock from "@/mocks/gaps.json";
 import interviewMock from "@/mocks/interview.json";
 import resumeMock from "@/mocks/resume.json";
@@ -136,8 +139,17 @@ export function getFeed(filters: FeedFilters = {}) {
   return call(z.array(feedItemSchema), `/api/feed${qs ? `?${qs}` : ""}`, { live: true });
 }
 
-/** Finds one job from the feed. There is no single-job route in the contract yet. */
+/**
+ * Finds one job. There is no single-job route.
+ * Mock ids such as job-02 are not in the live feed. With mocks on, those ids
+ * come from mocks/feed.json. Real uuid jobs still come from GET /api/feed.
+ */
 export async function getFeedItem(jobId: string) {
+  if (USE_MOCKS) {
+    const mocks = parseOrThrow(z.array(feedItemSchema), feedMock, "mocks/feed.json");
+    const mockItem = mocks.find((item) => item.job.id === jobId);
+    if (mockItem) return mockItem;
+  }
   const feed = await getFeed();
   const item = feed.find((f) => f.job.id === jobId);
   if (!item) throw new ApiError("Job not found");
@@ -175,15 +187,89 @@ export function tailor(jobId: string) {
   return call(tailorResultSchema, "/api/tailor", { method: "POST", body: { jobId }, mock: tailorMock });
 }
 
-export function saveTailorDecisions(
+const TAILOR_STORAGE_PREFIX = "umass-cc:tailor:";
+
+function tailorStorageKey(jobId: string) {
+  return `${TAILOR_STORAGE_PREFIX}${jobId}`;
+}
+
+function readMockTailoring(jobId: string): TailorResult | null {
+  if (typeof window === "undefined") return null;
+  let raw: string | null;
+  try {
+    raw = window.sessionStorage.getItem(tailorStorageKey(jobId));
+  } catch {
+    throw new ApiError("Could not load saved tailoring.");
+  }
+  if (!raw) return null;
+  let json: unknown;
+  try {
+    json = JSON.parse(raw) as unknown;
+  } catch {
+    throw new ApiError("Could not load saved tailoring.");
+  }
+  return parseOrThrow(tailorResultSchema, json, "saved tailoring");
+}
+
+function writeMockTailoring(jobId: string, result: TailorResult) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(tailorStorageKey(jobId), JSON.stringify(result));
+  } catch {
+    throw new ApiError("Could not save decisions.");
+  }
+}
+
+/**
+ * Latest tailoring for this job, or null when the student has not run one.
+ * There is no GET /api/tailor. Mock mode reads sessionStorage. Real mode
+ * reads the newest tailorings row for this user and job. Blocked reasons are
+ * only on the POST response, so a row comes back with an empty blocked list.
+ */
+export async function getLatestTailoring(jobId: string): Promise<TailorResult | null> {
+  if (USE_MOCKS) return readMockTailoring(jobId);
+  if (!AUTH_ENABLED) return null;
+
+  const supabase = createClient();
+  const userId = await currentUserId();
+  const { data, error } = await supabase
+    .from("tailorings")
+    .select("id, user_id, job_id, resume_id, bullet_diffs, rejected_count, created_at")
+    .eq("user_id", userId)
+    .eq("job_id", jobId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new ApiError("Could not load saved tailoring.");
+  if (!data) return null;
+
+  const row = parseOrThrow(tailoringRowSchema, data, "tailorings");
+  return {
+    tailoringId: row.id,
+    diffs: row.bullet_diffs,
+    blocked: [],
+    rejectedCount: row.rejected_count,
+  };
+}
+
+/**
+ * Saves accept/reject decisions. Mock mode does not call PATCH: the mock
+ * tailoring id is not a uuid. `snapshot` is the full result (statuses and
+ * blocked reasons) written to sessionStorage after that mock save succeeds.
+ * Real mode ignores `snapshot`; PATCH already stores bullet_diffs.
+ */
+export async function saveTailorDecisions(
   tailoringId: string,
   decisions: TailorDecision[],
+  snapshot?: { jobId: string; result: TailorResult },
 ) {
-  return call(okSchema, "/api/tailor", {
+  const ok = await call(okSchema, "/api/tailor", {
     method: "PATCH",
     body: { tailoringId, decisions },
     mock: { ok: true },
   });
+  if (USE_MOCKS && snapshot) writeMockTailoring(snapshot.jobId, snapshot.result);
+  return ok;
 }
 
 // ---------------------------------------------------------------- tracker

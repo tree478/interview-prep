@@ -219,7 +219,7 @@ The order within each person's section is the build order.
   - Buttons on each card: View posting (external), See gaps & tailor (→ job detail), **Add to tracker** (TAILOR-5).
   - **Done when:** the mock feed shows all three card states (normal, hard mismatch, N/A) correctly. Filters change the request.
 
-- [ ] **A-6 — Job detail: gap plan, ATS check, tailoring diff** · GAP-1, ATS-1, ATS-2, TAILOR-1/2/3, TAILOR-5 · depends on: A-5, contracts (real: B-6, B-7, B-8)
+- [x] **A-6 — Job detail: gap plan, ATS check, tailoring diff** · GAP-1, ATS-1, ATS-2, TAILOR-1/2/3, TAILOR-5 · depends on: A-5, contracts (real: B-6, B-7, B-8)
   - Route `/dashboard/jobs/[id]`. Top: score card (reuse from A-5).
   - **Gaps panel** (`POST /api/gaps`): per missing skill, course cards (code, title, instructors, link to the CICS page) and lab cards (name, faculty names linked to profiles). If none: "No UMass match found for <skill>".
   - **ATS panel** (`POST /api/ats`): list issues labeled **"Possible issues"**. When any exist, show a callout: "Consider talking to UMass Career Services about your resume" (link to the Career Services site, no booking).
