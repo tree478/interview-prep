@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getFeed, type FeedFilters } from "@/lib/api";
 import type { FeedItem } from "@/lib/types";
 import { useApi } from "@/components/use-api";
@@ -13,17 +13,36 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// Long enough that a location word finishes before the feed refetches.
+const LOCATION_DEBOUNCE_MS = 300;
+
 // Job feed (JOB-5). The server already sorts by score, so we keep its order.
 export default function FeedPage() {
   const [filters, setFilters] = useState<FeedFilters>({});
-  // Re-fetch whenever a filter changes.
+  // The text field updates immediately. The request waits until typing pauses.
+  const [locationInput, setLocationInput] = useState("");
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      const next = locationInput.trim() || undefined;
+      setFilters((current) => (current.location === next ? current : { ...current, location: next }));
+    }, LOCATION_DEBOUNCE_MS);
+    return () => window.clearTimeout(handle);
+  }, [locationInput]);
+
+  // Sponsorship and role type are already on `filters`, so they refetch immediately.
   const feed = useApi(() => getFeed(filters), [filters.location, filters.sponsorship, filters.roleType]);
 
   return (
     <>
       <PageHeader title="Job feed" description="Real Greenhouse and Lever postings, ranked by how well they match your resume." />
 
-      <FeedFilterBar filters={filters} onChange={setFilters} />
+      <FeedFilterBar
+        filters={filters}
+        onChange={setFilters}
+        locationInput={locationInput}
+        onLocationInput={setLocationInput}
+      />
 
       {feed.status === "loading" && <LoadingCards count={4} />}
       {feed.status === "error" && <ErrorMessage message={feed.error} onRetry={feed.reload} />}
@@ -75,8 +94,19 @@ function FeedCard({ item }: { item: FeedItem }) {
   );
 }
 
-function FeedFilterBar({ filters, onChange }: { filters: FeedFilters; onChange: (f: FeedFilters) => void }) {
+function FeedFilterBar({
+  filters,
+  onChange,
+  locationInput,
+  onLocationInput,
+}: {
+  filters: FeedFilters;
+  onChange: (update: (current: FeedFilters) => FeedFilters) => void;
+  locationInput: string;
+  onLocationInput: (value: string) => void;
+}) {
   // Native <select> elements are keyboard and screen-reader friendly out of the box.
+  // The feed never includes roleType "other" (the API drops those), so it is not a choice here.
   const selectClass = "h-7 rounded-md border bg-transparent px-2 text-xs";
   return (
     <div className="mb-4 flex flex-wrap items-end gap-3">
@@ -86,8 +116,8 @@ function FeedFilterBar({ filters, onChange }: { filters: FeedFilters; onChange: 
           id="f-location"
           placeholder="e.g. Boston"
           className="w-40"
-          value={filters.location ?? ""}
-          onChange={(e) => onChange({ ...filters, location: e.target.value || undefined })}
+          value={locationInput}
+          onChange={(e) => onLocationInput(e.target.value)}
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -96,9 +126,10 @@ function FeedFilterBar({ filters, onChange }: { filters: FeedFilters; onChange: 
           id="f-sponsorship"
           className={selectClass}
           value={filters.sponsorship ?? ""}
-          onChange={(e) =>
-            onChange({ ...filters, sponsorship: (e.target.value || undefined) as FeedFilters["sponsorship"] })
-          }
+          onChange={(e) => {
+            const sponsorship = (e.target.value || undefined) as FeedFilters["sponsorship"];
+            onChange((current) => ({ ...current, sponsorship }));
+          }}
         >
           <option value="">Any</option>
           <option value="yes">Sponsors</option>
@@ -112,14 +143,14 @@ function FeedFilterBar({ filters, onChange }: { filters: FeedFilters; onChange: 
           id="f-role"
           className={selectClass}
           value={filters.roleType ?? ""}
-          onChange={(e) =>
-            onChange({ ...filters, roleType: (e.target.value || undefined) as FeedFilters["roleType"] })
-          }
+          onChange={(e) => {
+            const roleType = (e.target.value || undefined) as FeedFilters["roleType"];
+            onChange((current) => ({ ...current, roleType }));
+          }}
         >
           <option value="">Any</option>
           <option value="internship">Internship</option>
           <option value="new_grad">New grad</option>
-          <option value="other">Other</option>
         </select>
       </div>
     </div>

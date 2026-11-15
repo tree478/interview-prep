@@ -34,7 +34,7 @@ export function MatchReasons({ match }: { match: MatchResult }) {
       )}
 
       {match.score === null && (
-        <p className="text-muted-foreground">No required skills listed in this posting.</p>
+        <p className="text-muted-foreground">No required skills listed</p>
       )}
 
       {match.covered.length > 0 && (
