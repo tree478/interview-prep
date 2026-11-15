@@ -27,6 +27,7 @@ import {
   starFeedbackSchema,
   tailoringRowSchema,
   tailorResultSchema,
+  type BotRun,
   type RoleType,
   type Sponsorship,
   type Stage,
@@ -46,8 +47,10 @@ import tailorMock from "@/mocks/tailor.json";
 // Mocks are on unless someone explicitly turns them off.
 export const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS !== "false";
 
-// Mock id for the bot buttons. lib/types.ts requires run ids to be UUIDs.
+// Mock ids for the bot buttons. lib/types.ts requires run ids to be UUIDs.
+// Scout and courses each get one so both rows can be on screen together.
 const MOCK_RUN = { runId: "00000000-0000-4000-8000-0000000000b1" };
+const MOCK_COURSES_RUN = { runId: "00000000-0000-4000-8000-0000000000b2" };
 
 /** Thrown when a request fails. `message` is safe to show to the user. */
 export class ApiError extends Error {
@@ -288,12 +291,73 @@ export function updateApplication(update: { id: string; stage?: Stage; deadline?
 }
 
 // ---------------------------------------------------------------- bot activity
+//
+// Mock mode keeps its own list (seeded from mocks/bot-runs.json) so a click can
+// show "running" and then "done". The real routes are unchanged: POST returns
+// { runId } immediately and GET /api/ingest/runs is what later says "done".
+
+const MOCK_FINISH_MS = 4_000;
+
+let mockBotRuns: BotRun[] | null = null;
+const mockFinishTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+function ensureMockBotRuns(): BotRun[] {
+  mockBotRuns ??= parseOrThrow(z.array(botRunSchema), botRunsMock, "mocks/bot-runs.json");
+  return mockBotRuns;
+}
+
+/** Prepend a running row, then flip that same row to done. Newest stays first. */
+function beginMockRun(row: BotRun, finish: (row: BotRun) => void) {
+  const runs = ensureMockBotRuns();
+  const existing = runs.findIndex((run) => run.id === row.id);
+  if (existing !== -1) runs.splice(existing, 1);
+  runs.unshift(row);
+
+  const previous = mockFinishTimers.get(row.id);
+  if (previous) clearTimeout(previous);
+  const startedAt = row.startedAt;
+  const timer = setTimeout(() => {
+    mockFinishTimers.delete(row.id);
+    const current = ensureMockBotRuns().find((run) => run.id === row.id);
+    if (!current || current.status !== "running" || current.startedAt !== startedAt) return;
+    finish(current);
+    current.status = "done";
+    current.finishedAt = new Date().toISOString();
+  }, MOCK_FINISH_MS);
+  mockFinishTimers.set(row.id, timer);
+}
 
 export function getBotRuns() {
-  return call(z.array(botRunSchema), "/api/ingest/runs", { mock: botRunsMock });
+  if (!USE_MOCKS) return call(z.array(botRunSchema), "/api/ingest/runs", { live: true });
+  return call(z.array(botRunSchema), "/api/ingest/runs", { mock: ensureMockBotRuns() });
 }
 
 export function runScout() {
+  if (USE_MOCKS) {
+    beginMockRun(
+      {
+        id: MOCK_RUN.runId,
+        kind: "scout",
+        status: "running",
+        trigger: "manual",
+        startedAt: new Date().toISOString(),
+        finishedAt: null,
+        companiesSelected: [],
+        jobsAdded: 0,
+        jobsExtracted: 0,
+        errors: [],
+      },
+      (row) => {
+        // Same shape as mocks/bot-runs.json: two companies, one fallback pick.
+        row.companiesSelected = [
+          { company: "Wayfair", reason: "Not checked in 3 days and 4 students saved its postings", fallback: false },
+          { company: "HubSpot", reason: "Fallback: least recently checked", fallback: true },
+        ];
+        row.jobsAdded = 9;
+        row.jobsExtracted = 9;
+      },
+    );
+  }
   return call(runIdSchema, "/api/ingest/run", {
     method: "POST",
     body: { trigger: "manual" },
@@ -302,7 +366,27 @@ export function runScout() {
 }
 
 export function refreshCourses() {
-  return call(runIdSchema, "/api/ingest/courses", { method: "POST", mock: MOCK_RUN });
+  if (USE_MOCKS) {
+    beginMockRun(
+      {
+        id: MOCK_COURSES_RUN.runId,
+        kind: "courses",
+        status: "running",
+        trigger: "manual",
+        startedAt: new Date().toISOString(),
+        finishedAt: null,
+        companiesSelected: [],
+        jobsAdded: 0,
+        jobsExtracted: 0,
+        errors: [],
+      },
+      (row) => {
+        row.companiesSelected = [];
+        row.courseStats = { found: 148, added: 0, changed: 2, removed: 0, unchanged: false };
+      },
+    );
+  }
+  return call(runIdSchema, "/api/ingest/courses", { method: "POST", mock: MOCK_COURSES_RUN });
 }
 
 // ---------------------------------------------------------------- interview

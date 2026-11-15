@@ -233,7 +233,7 @@ The order within each person's section is the build order.
   - Card: title, company, score, deadline date picker, stage dropdown (no drag-and-drop needed).
   - **Done when:** add from feed → appears in Saved → set deadline → card re-sorts → move to Applied → survives reload.
 
-- [ ] **A-8 — Bot activity panel** · JOB-4, GAP-2b · depends on: contract (real: C-5, C-7)
+- [x] **A-8 — Bot activity panel** · JOB-4, GAP-2b · depends on: contract (real: C-5, C-7)
   - Polls `GET /api/ingest/runs` every 3 s while any run has `status: 'running'`, otherwise every 30 s.
   - Buttons: **Run Scout now** (`POST /api/ingest/run { trigger: 'manual' }`) and **Refresh courses** (`POST /api/ingest/courses`). Disable while running.
   - Each run row: time, trigger badge (cron/manual), kind, status, companies Grok chose with the reason for each (mark fallback picks), jobs added, jobs extracted, errors (red, collapsible), course stats for course runs.
