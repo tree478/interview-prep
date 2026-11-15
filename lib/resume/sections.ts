@@ -2,24 +2,50 @@ import { atsReportSchema, type AtsReport } from "../types";
 
 type Section = AtsReport["missingSections"][number];
 
-// A heading is its own short line: the label, or the label plus a colon.
+// A heading is its own short line. Case, "&", and other punctuation are ignored.
 const SECTION_LABELS: { section: Section; labels: readonly string[] }[] = [
   { section: "Education", labels: ["education"] },
   {
     section: "Experience",
-    labels: ["work experience", "professional experience"],
+    labels: [
+      "work experience",
+      "professional experience",
+      "technical experience",
+      "research experience",
+      "experience",
+      "employment",
+      "work history",
+      "internships",
+    ],
   },
-  { section: "Skills", labels: ["technical skills", "skills"] },
+  {
+    section: "Skills",
+    labels: [
+      "technical skills",
+      "skills & tools",
+      "languages & tools",
+      "technologies",
+      "core competencies",
+      "skills",
+    ],
+  },
 ];
 
 const SECTION_ORDER: readonly Section[] = ["Education", "Experience", "Skills"];
 
 const MAX_HEADING_LENGTH = 40;
 
+function normalizeHeading(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function matchesHeading(line: string, label: string): boolean {
-  if (line === label) return true;
-  if (!line.startsWith(label)) return false;
-  return /^[:\s]+$/.test(line.slice(label.length));
+  return normalizeHeading(line) === normalizeHeading(label);
 }
 
 export function missingSections(rawText: string): Section[] {

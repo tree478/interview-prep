@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/ingest/admin';
 import { secretAuth } from '@/lib/ingest/auth';
 import { syncCourses } from '@/lib/ingest/courses/sync';
 import { getSessionUser } from '@/lib/ingest/session';
+import { runIdSchema } from '@/lib/types';
 
 // Vercel Hobby caps functions at 60 s. Raise this on Pro (up to 300 s) if runs get cut off.
 export const maxDuration = 60;
@@ -45,7 +46,7 @@ async function start(request: Request): Promise<NextResponse> {
       .order('started_at', { ascending: false })
       .limit(1);
     if (running.error) throw new Error(running.error.message);
-    if (running.data?.[0]) return NextResponse.json({ runId: running.data[0].id });
+    if (running.data?.[0]) return NextResponse.json(runIdSchema.parse({ runId: running.data[0].id }));
 
     const ins = await db
       .from('bot_runs')
@@ -57,7 +58,7 @@ async function start(request: Request): Promise<NextResponse> {
 
     // syncCourses never throws: it finishes the bot_runs row itself ('done' or 'failed').
     after(() => syncCourses(db, runId, { deadline }));
-    return NextResponse.json({ runId });
+    return NextResponse.json(runIdSchema.parse({ runId }));
   } catch (e) {
     console.error('course sync failed to start', e instanceof Error ? e.message : e);
     return NextResponse.json({ error: 'Could not start run' }, { status: 500 });
