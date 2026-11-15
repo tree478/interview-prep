@@ -543,12 +543,6 @@ describe("scoreMatch", () => {
         pay: { min: 100000, max: 110000, interval: "year" },
       }),
     });
-    const monthly = score({
-      minPay: 50000,
-      posting: posting({
-        pay: { min: 6000, max: 7000, interval: "month" },
-      }),
-    });
 
     // 40 * 2080 = 83200, which clears 80000 and misses 100000.
     // No preferred skills: 0.7R + 0.3Q. R = 1, Q = 0 → 70.
@@ -560,13 +554,82 @@ describe("scoreMatch", () => {
     expect(hourlyBelow.checks).toEqual([
       { name: "pay", passed: false, detail: "Pay is below your minimum" },
     ]);
-    expect(monthly.checks).toEqual([]);
     expect(yearly.checks).toEqual([
       { name: "pay", passed: true, detail: "Pay meets minimum" },
     ]);
     expect(below.checks).toEqual([
       { name: "pay", passed: false, detail: "Pay is below your minimum" },
     ]);
+  });
+
+  it("annualizes a stated monthly rate by multiplying by 12", () => {
+    const meets = score({
+      minPay: 50000,
+      posting: posting({
+        pay: { min: 6000, max: 7000, interval: "month" },
+      }),
+    });
+    const below = score({
+      minPay: 80000,
+      posting: posting({
+        pay: { min: 6000, max: 7000, interval: "month" },
+      }),
+    });
+
+    // 6000 * 12 = 72000, which clears 50000 and misses 80000.
+    expect(meets.checks).toEqual([
+      { name: "pay", passed: true, detail: "Pay meets minimum" },
+    ]);
+    expect(below.checks).toEqual([
+      { name: "pay", passed: false, detail: "Pay is below your minimum" },
+    ]);
+  });
+
+  it("infers a missing pay interval from the amount and does not fail on that guess", () => {
+    const palantir = score({
+      minPay: 60000,
+      posting: posting({
+        pay: { min: 10500, max: null, interval: null },
+      }),
+    });
+    const lowMonthly = score({
+      minPay: 60000,
+      posting: posting({
+        pay: { min: 2450, max: null, interval: null },
+      }),
+    });
+    const hourlyMeets = score({
+      minPay: 80000,
+      posting: posting({
+        pay: { min: 40, max: null, interval: null },
+      }),
+    });
+    const hourlyMiss = score({
+      minPay: 100000,
+      posting: posting({
+        pay: { min: 40, max: null, interval: null },
+      }),
+    });
+    const yearlyMiss = score({
+      minPay: 80000,
+      posting: posting({
+        pay: { min: 50000, max: null, interval: null },
+      }),
+    });
+
+    // Under 20000 is read as monthly. 10500 * 12 = 126000, which clears 60000.
+    // 2450 * 12 = 29400, which misses 60000, so the check is skipped.
+    expect(palantir.checks).toEqual([
+      { name: "pay", passed: true, detail: "Pay meets minimum" },
+    ]);
+    expect(lowMonthly.checks).toEqual([]);
+    // Under 1000 is read as hourly. 40 * 2080 = 83200.
+    expect(hourlyMeets.checks).toEqual([
+      { name: "pay", passed: true, detail: "Pay meets minimum" },
+    ]);
+    expect(hourlyMiss.checks).toEqual([]);
+    // 50000 is read as yearly and misses 80000, so the check is skipped.
+    expect(yearlyMiss.checks).toEqual([]);
   });
 });
 

@@ -33,7 +33,9 @@ describe("jobRowSchema", () => {
   });
 
   it("rejects a job row that omits created_at", () => {
-    const { created_at: _createdAt, ...withoutCreatedAt } = job;
+    const withoutCreatedAt = Object.fromEntries(
+      Object.entries(job).filter(([key]) => key !== "created_at"),
+    );
     expect(jobRowSchema.safeParse(withoutCreatedAt).success).toBe(false);
   });
 });
