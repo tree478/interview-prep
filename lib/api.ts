@@ -36,12 +36,9 @@ import {
 } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 
-import atsMock from "@/mocks/ats.json";
 import botRunsMock from "@/mocks/bot-runs.json";
 import feedMock from "@/mocks/feed.json";
-import gapsMock from "@/mocks/gaps.json";
 import resumeMock from "@/mocks/resume.json";
-import tailorMock from "@/mocks/tailor.json";
 
 // Mocks are on unless someone explicitly turns them off.
 export const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS !== "false";
@@ -96,13 +93,16 @@ async function call<T>(
   // Our routes return { error: string } on failure (CLAUDE.md rule).
   const json: unknown = await res.json().catch(() => null);
   if (!res.ok) {
-    // 401 means no valid session (routes say "Not signed in"); say what to do instead.
-    if (res.status === 401) throw new ApiError(LOGGED_OUT_MESSAGE, 401);
-    const message =
+    const routeError =
       json && typeof json === "object" && "error" in json && typeof json.error === "string"
         ? json.error
-        : `Request failed (${res.status})`;
-    throw new ApiError(message, res.status);
+        : undefined;
+    // Status stays on the error so a logged-out session can offer "Log in again".
+    // The message is the route's error string when the body sent one.
+    throw new ApiError(
+      routeError ?? (res.status === 401 ? LOGGED_OUT_MESSAGE : `Request failed (${res.status})`),
+      res.status,
+    );
   }
   return parseOrThrow(schema, json, path);
 }
@@ -176,16 +176,18 @@ export function uploadResume(file: File) {
 
 // ---------------------------------------------------------------- job detail
 
+// Always real (live: true), even with mocks on. These routes are finished, and a
+// mocked gap, ATS, or tailor result would not belong to the job from GET /api/feed.
 export function getGaps(jobId: string) {
-  return call(gapsResponseSchema, "/api/gaps", { method: "POST", body: { jobId }, mock: gapsMock });
+  return call(gapsResponseSchema, "/api/gaps", { method: "POST", body: { jobId }, live: true });
 }
 
 export function getAts(jobId: string) {
-  return call(atsReportSchema, "/api/ats", { method: "POST", body: { jobId }, mock: atsMock });
+  return call(atsReportSchema, "/api/ats", { method: "POST", body: { jobId }, live: true });
 }
 
 export function tailor(jobId: string) {
-  return call(tailorResultSchema, "/api/tailor", { method: "POST", body: { jobId }, mock: tailorMock });
+  return call(tailorResultSchema, "/api/tailor", { method: "POST", body: { jobId }, live: true });
 }
 
 const TAILOR_STORAGE_PREFIX = "umass-cc:tailor:";
@@ -254,9 +256,8 @@ export async function getLatestTailoring(jobId: string): Promise<TailorResult | 
 }
 
 /**
- * Saves accept/reject decisions. Mock mode does not call PATCH: the mock
- * tailoring id is not a uuid. `snapshot` is the full result (statuses and
- * blocked reasons) written to sessionStorage after that mock save succeeds.
+ * Saves accept/reject decisions. PATCH /api/tailor is always real.
+ * `snapshot` is written to sessionStorage only while mocks are on.
  * Real mode ignores `snapshot`; PATCH already stores bullet_diffs.
  */
 export async function saveTailorDecisions(
@@ -267,7 +268,7 @@ export async function saveTailorDecisions(
   const ok = await call(okSchema, "/api/tailor", {
     method: "PATCH",
     body: { tailoringId, decisions },
-    mock: { ok: true },
+    live: true,
   });
   if (USE_MOCKS && snapshot) writeMockTailoring(snapshot.jobId, snapshot.result);
   return ok;

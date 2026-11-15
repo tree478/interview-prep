@@ -35,7 +35,7 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <form method="post" onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       {serverError && <FormAlert message={serverError} />}
       {!AUTH_ENABLED && <MockAuthNote />}
 

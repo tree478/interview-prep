@@ -112,17 +112,19 @@ export default function TrackerPage() {
                           onChange={(event) => changeDeadline(app, event.target.value)}
                         />
                       </div>
-                      <label className="sr-only" htmlFor={`stage-${app.id}`}>Stage</label>
-                      <select
-                        id={`stage-${app.id}`}
-                        className="h-7 rounded-md border bg-transparent px-2 text-xs"
-                        value={app.stage}
-                        onChange={(e) => changeStage(app, e.target.value as Stage)}
-                      >
-                        {STAGES.map((s) => (
-                          <option key={s.id} value={s.id}>{s.label}</option>
-                        ))}
-                      </select>
+                      <div className="flex flex-col gap-1">
+                        <Label htmlFor={`stage-${app.id}`}>Stage</Label>
+                        <select
+                          id={`stage-${app.id}`}
+                          className="h-7 rounded-md border bg-transparent px-2 text-xs"
+                          value={app.stage}
+                          onChange={(e) => changeStage(app, e.target.value as Stage)}
+                        >
+                          {STAGES.map((s) => (
+                            <option key={s.id} value={s.id}>{s.label}</option>
+                          ))}
+                        </select>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

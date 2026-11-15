@@ -52,14 +52,19 @@ export type RetryRewrite = {
   reason: string;
 };
 
+const MAX_REWRITES = 3;
+
 const RULES = [
   "Rephrase only. Return the full replacement bullet in after, not a word diff.",
   "Copy id exactly.",
+  "Return rewrites for up to 3 existing bullets that best fit this posting. Put the best fit first.",
+  "A bullet that already matches the posting can still be rephrased to use the posting's wording.",
+  "Change the wording. Do not return a bullet unchanged.",
   "Emphasize an emphasis-list skill only when that same bullet already contains it.",
   "Do not add a skill, tool, employer, or number that is not already in that bullet.",
   "Do not move a skill from another bullet, the profile, or the posting into this bullet.",
   "Do not invent metrics, percentages, or counts.",
-  "Omit a bullet that has nothing to emphasize.",
+  "Omit a bullet only when it cannot be rephrased without adding a skill, employer, or number.",
 ];
 
 export function collectBullets(
@@ -104,6 +109,21 @@ export function knownEmployers(names: string[]): string[] {
     employers.push(trimmed);
   }
   return employers;
+}
+
+function keepFirstRewrites(
+  bullets: TailorBullet[],
+  rewrites: { id: string; after: string }[],
+  limit: number,
+): { id: string; after: string }[] {
+  const known = new Set(bullets.map((bullet) => bullet.id));
+  const keep = new Set<string>();
+  for (const rewrite of rewrites) {
+    if (!known.has(rewrite.id) || keep.has(rewrite.id)) continue;
+    keep.add(rewrite.id);
+    if (keep.size === limit) break;
+  }
+  return rewrites.filter((rewrite) => keep.has(rewrite.id));
 }
 
 function lastRewrite(rewrites: { id: string; after: string }[]): Map<string, string> {
@@ -228,7 +248,11 @@ export async function tailorBullets(
   call: TailorCall = defaultCall,
 ): Promise<{ diffs: BulletDiff[]; blocked: BlockedRewrite[]; rejectedCount: number }> {
   const first = await call(rewriteModelSchema, promptFor(input), { timeoutMs: 8000 });
-  const settled = settleRewrites(input.bullets, first.rewrites, input.knownEmployers);
+  const settled = settleRewrites(
+    input.bullets,
+    keepFirstRewrites(input.bullets, first.rewrites, MAX_REWRITES),
+    input.knownEmployers,
+  );
   if (settled.retry.length === 0) {
     return outcome(input.bullets, settled.diffs, settled.blocked);
   }

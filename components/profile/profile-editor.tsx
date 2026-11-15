@@ -224,10 +224,12 @@ function ClubsFields({
       {clubs.map((club, i) => (
         <div key={club.key} className="flex flex-col gap-1">
           <div className="flex gap-2">
-            <Input id={`${club.key}-name`} aria-label={`Club ${i + 1} name`} placeholder="Club" value={club.name}
+            <Label htmlFor={`${club.key}-name`} className="sr-only">Club {i + 1} name</Label>
+            <Input id={`${club.key}-name`} placeholder="Club" value={club.name}
               aria-invalid={errors[`${club.key}-name`] ? true : undefined}
               className="h-9 text-sm md:text-sm" onChange={(e) => update(club.key, { name: e.target.value })} />
-            <Input aria-label={`Club ${i + 1} role`} placeholder="Role (optional)" value={club.role}
+            <Label htmlFor={`${club.key}-role`} className="sr-only">Club {i + 1} role</Label>
+            <Input id={`${club.key}-role`} placeholder="Role (optional)" value={club.role}
               className="h-9 text-sm md:text-sm" onChange={(e) => update(club.key, { role: e.target.value })} />
             <Button type="button" variant="ghost" size="sm" aria-label={`Remove club ${i + 1}`} className="h-9"
               onClick={() => onChange(clubs.filter((c) => c.key !== club.key))}>

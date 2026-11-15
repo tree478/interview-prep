@@ -68,9 +68,10 @@ export default function OnboardingPage() {
     try {
       await refreshMatches(); // POST /api/match: rescore jobs against the new profile
       toast.success("Profile saved");
-    } catch {
+    } catch (err) {
       // The profile itself is saved, so still go to the feed; scores refresh on the next save.
-      toast.warning("Profile saved, but match scores couldn't update yet.");
+      const detail = err instanceof ApiError ? err.message : "Match scores couldn't update yet.";
+      toast.warning(`Profile saved. ${detail}`);
     }
     router.push("/dashboard");
     router.refresh(); // make server components re-read data with the updated profile
@@ -113,8 +114,7 @@ export default function OnboardingPage() {
       {step.name === "error" && (
         // role="alert" is announced immediately, since the student is waiting on this result.
         <div role="alert" className="flex flex-col items-center gap-3 py-16 text-center">
-          <p className="font-medium text-destructive">We couldn&apos;t read your résumé</p>
-          <p className="max-w-md text-sm text-muted-foreground">{step.message}</p>
+          <p className="max-w-md font-medium text-destructive">{step.message}</p>
           <div className="mt-2 flex flex-wrap justify-center gap-2">
             {step.loggedOut ? (
               <Button asChild>
