@@ -123,9 +123,10 @@ export type FeedFilters = {
 
 export function getFeed(filters: FeedFilters = {}) {
   const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(filters)) {
-    if (value) params.set(key, value);
-  }
+  // location, then sponsorship, then role type. Blank values are left off.
+  if (filters.location) params.set("location", filters.location);
+  if (filters.sponsorship) params.set("sponsorship", filters.sponsorship);
+  if (filters.roleType) params.set("roleType", filters.roleType);
   const qs = params.toString();
 
   // Always real (live: true), even with mocks on: GET /api/feed is finished and

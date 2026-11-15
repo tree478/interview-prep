@@ -213,7 +213,7 @@ The order within each person's section is the build order.
   - On save, call `POST /api/match` so scores refresh.
   - **Done when:** changing "needs sponsorship" to yes and saving changes the feed (hard-mismatch flags appear).
 
-- [ ] **A-5 — Job feed** · JOB-5, MATCH-4, MATCH-5, MATCH-6 · depends on: A-1, contract (real: B-5)
+- [x] **A-5 — Job feed** · JOB-5, MATCH-4, MATCH-5, MATCH-6 · depends on: A-1, contract (real: B-5)
   - Calls `GET /api/feed`. Keep the server's order (it already sorts). Filters: location, sponsorship, role type → query params.
   - Card: title, company, location, big score ("82%" or "N/A"), bullets "Has Python, React" / "Missing Docker", requirement checks, a red **"Hard mismatch: <reason>"** badge when set, "No required skills listed" when N/A.
   - Buttons on each card: View posting (external), See gaps & tailor (→ job detail), **Add to tracker** (TAILOR-5).
