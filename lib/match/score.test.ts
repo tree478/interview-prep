@@ -534,7 +534,7 @@ describe("scoreMatch", () => {
     const yearly = score({
       minPay: 80000,
       posting: posting({
-        pay: { min: 80000, max: null, interval: null },
+        pay: { min: 80000, max: null, interval: "year" },
       }),
     });
     const below = score({
@@ -585,51 +585,29 @@ describe("scoreMatch", () => {
     ]);
   });
 
-  it("infers a missing pay interval from the amount and does not fail on that guess", () => {
+  it("skips the pay check when the posting states no interval", () => {
+    const stipend = score({
+      minPay: 60000,
+      posting: posting({
+        pay: { min: 15000, max: null, interval: null },
+      }),
+    });
     const palantir = score({
       minPay: 60000,
       posting: posting({
         pay: { min: 10500, max: null, interval: null },
       }),
     });
-    const lowMonthly = score({
+    const looksYearly = score({
       minPay: 60000,
       posting: posting({
-        pay: { min: 2450, max: null, interval: null },
-      }),
-    });
-    const hourlyMeets = score({
-      minPay: 80000,
-      posting: posting({
-        pay: { min: 40, max: null, interval: null },
-      }),
-    });
-    const hourlyMiss = score({
-      minPay: 100000,
-      posting: posting({
-        pay: { min: 40, max: null, interval: null },
-      }),
-    });
-    const yearlyMiss = score({
-      minPay: 80000,
-      posting: posting({
-        pay: { min: 50000, max: null, interval: null },
+        pay: { min: 80000, max: null, interval: null },
       }),
     });
 
-    // Under 20000 is read as monthly. 10500 * 12 = 126000, which clears 60000.
-    // 2450 * 12 = 29400, which misses 60000, so the check is skipped.
-    expect(palantir.checks).toEqual([
-      { name: "pay", passed: true, detail: "Pay meets minimum" },
-    ]);
-    expect(lowMonthly.checks).toEqual([]);
-    // Under 1000 is read as hourly. 40 * 2080 = 83200.
-    expect(hourlyMeets.checks).toEqual([
-      { name: "pay", passed: true, detail: "Pay meets minimum" },
-    ]);
-    expect(hourlyMiss.checks).toEqual([]);
-    // 50000 is read as yearly and misses 80000, so the check is skipped.
-    expect(yearlyMiss.checks).toEqual([]);
+    expect(stipend.checks).toEqual([]);
+    expect(palantir.checks).toEqual([]);
+    expect(looksYearly.checks).toEqual([]);
   });
 });
 
