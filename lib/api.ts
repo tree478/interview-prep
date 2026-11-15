@@ -35,7 +35,6 @@ import {
 } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 
-import applicationsMock from "@/mocks/applications.json";
 import atsMock from "@/mocks/ats.json";
 import botRunsMock from "@/mocks/bot-runs.json";
 import feedMock from "@/mocks/feed.json";
@@ -274,16 +273,18 @@ export async function saveTailorDecisions(
 
 // ---------------------------------------------------------------- tracker
 
+// Always real (live: true), even with mocks on. A mocked board would hide a
+// save from the feed, and the tracker reads the same /api/applications rows.
 export function getApplications() {
-  return call(z.array(applicationSchema), "/api/applications", { mock: applicationsMock });
+  return call(z.array(applicationSchema), "/api/applications", { live: true });
 }
 
 export function addApplication(jobId: string) {
-  return call(okSchema, "/api/applications", { method: "POST", body: { jobId }, mock: { ok: true } });
+  return call(okSchema, "/api/applications", { method: "POST", body: { jobId }, live: true });
 }
 
 export function updateApplication(update: { id: string; stage?: Stage; deadline?: string | null }) {
-  return call(okSchema, "/api/applications", { method: "PATCH", body: update, mock: { ok: true } });
+  return call(okSchema, "/api/applications", { method: "PATCH", body: update, live: true });
 }
 
 // ---------------------------------------------------------------- bot activity
