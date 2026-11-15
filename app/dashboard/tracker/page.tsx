@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { toast } from "sonner";
-import { getApplications, updateApplication } from "@/lib/api";
+import { deleteApplication, getApplications, updateApplication } from "@/lib/api";
 import type { Application, Stage } from "@/lib/types";
 import { useApi } from "@/components/use-api";
 import { ErrorMessage, LoadingCards, PageHeader } from "@/components/page-state";
@@ -39,6 +39,20 @@ export default function TrackerPage() {
     } catch (err) {
       apps.setData(previous);
       toast.error(err instanceof Error ? err.message : "Could not update stage");
+    }
+  }
+
+  async function removeApplication(app: Application) {
+    if (apps.status !== "success") return;
+    if (!window.confirm(`Delete your application to ${app.job.company}, ${app.job.title}? This cannot be undone.`)) return;
+    const previous = apps.data;
+    apps.setData(previous.filter((a) => a.id !== app.id));
+    try {
+      await deleteApplication(app.id);
+      toast.success("Application deleted");
+    } catch (err) {
+      apps.setData(previous);
+      toast.error(err instanceof Error ? err.message : "Could not delete application");
     }
   }
 
@@ -118,11 +132,16 @@ export default function TrackerPage() {
                           id={`stage-${app.id}`}
                           className="h-7 rounded-md border bg-transparent px-2 text-xs"
                           value={app.stage}
-                          onChange={(e) => changeStage(app, e.target.value as Stage)}
+                          onChange={(e) =>
+                            e.target.value === "delete"
+                              ? removeApplication(app)
+                              : changeStage(app, e.target.value as Stage)
+                          }
                         >
                           {STAGES.map((s) => (
                             <option key={s.id} value={s.id}>{s.label}</option>
                           ))}
+                          <option value="delete">Delete application</option>
                         </select>
                       </div>
                     </CardContent>
