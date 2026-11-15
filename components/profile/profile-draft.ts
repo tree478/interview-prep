@@ -20,7 +20,16 @@ export type ExperienceDraft = {
   skills: string[];
 };
 
-export type ProfileDraft = {
+/** Job preferences (PROF-3). Only what the student states; never guessed. */
+export type Preferences = {
+  needsSponsorship: boolean;
+  openToRelocation: boolean;
+  preferredLocations: string[];
+  /** Raw text from the input ("85,000"), converted to a number on save. "" = no minimum. */
+  minPay: string;
+};
+
+export type ProfileDraft = Preferences & {
   fullName: string;
   year: string;
   majors: string[];
@@ -34,6 +43,9 @@ export type ProfileDraft = {
 
 export const MAX_INTERESTS = 10; // PRD AUTH-4, and a CHECK constraint in the database
 export const SKILLS_SHOWN_BEFORE_EXPAND = 20;
+export const MAX_PREFERRED_LOCATIONS = 10;
+/** Upper bound for minimum yearly pay; anything above is almost certainly a typo. */
+export const MAX_MIN_PAY = 1_000_000;
 
 let keyCounter = 0;
 /** A unique key for list items created in this browser session. */
@@ -75,12 +87,52 @@ export function emptyExperience(): ExperienceDraft {
   return { key: newKey("exp"), company: "", position: "", start: "", end: "", bullets: [""], skills: [] };
 }
 
-export function emptyDraft(fullName = ""): ProfileDraft {
-  return { fullName, year: "", majors: [], minors: [], honors: [], clubs: [], experiences: [], skills: [], interests: [] };
+export function defaultPreferences(): Preferences {
+  return { needsSponsorship: false, openToRelocation: false, preferredLocations: [], minPay: "" };
 }
 
-export function draftFromParsedResume(parsed: ParsedResume, fullName: string): ProfileDraft {
+/** The preferences already saved on a profile row, as draft values. */
+export function preferencesFromRow(profile: ProfileRow): Preferences {
   return {
+    needsSponsorship: profile.needs_sponsorship,
+    openToRelocation: profile.open_to_relocation,
+    preferredLocations: profile.preferred_locations,
+    minPay: profile.min_pay == null ? "" : String(profile.min_pay),
+  };
+}
+
+/**
+ * Minimum pay text -> number for the database.
+ * Accepts "85000", "85,000", "$85,000". "" -> null (no minimum).
+ * Returns "invalid" for anything that isn't a whole number from 0 to MAX_MIN_PAY.
+ */
+export function parseMinPay(raw: string): number | null | "invalid" {
+  const text = raw.trim().replace(/^\$/, "").replace(/,/g, "").trim();
+  if (!text) return null;
+  if (!/^\d+$/.test(text)) return "invalid";
+  const value = Number(text);
+  return value <= MAX_MIN_PAY ? value : "invalid";
+}
+
+/**
+ * A résumé never contains job preferences, so these drafts take the student's
+ * existing ones (default: none). Onboarding passes what's already saved, so
+ * re-uploading a résumé never resets sponsorship, relocation, locations or pay.
+ */
+export function emptyDraft(fullName = "", preferences: Preferences = defaultPreferences()): ProfileDraft {
+  return {
+    fullName, year: "", majors: [], minors: [], honors: [], clubs: [], experiences: [], skills: [], interests: [],
+    ...preferences,
+  };
+}
+
+export function draftFromParsedResume(
+  parsed: ParsedResume,
+  fullName: string,
+  preferences: Preferences = defaultPreferences(),
+): ProfileDraft {
+  return {
+    ...preferences,
     fullName,
     year: parsed.academics.year ?? "",
     majors: parsed.academics.majors,
@@ -103,6 +155,7 @@ export function draftFromParsedResume(parsed: ParsedResume, fullName: string): P
 
 export function draftFromRows(profile: ProfileRow, experiences: ExperienceRow[]): ProfileDraft {
   return {
+    ...preferencesFromRow(profile),
     fullName: profile.full_name,
     year: profile.year ?? "",
     majors: profile.majors,
@@ -136,10 +189,16 @@ export function validateDraft(draft: ProfileDraft): Record<string, string> {
     if (!club.name.trim() && club.role.trim()) errors[`${club.key}-name`] = "Enter the club name.";
   }
   if (draft.interests.length > MAX_INTERESTS) errors["profile-interests"] = `Keep it to ${MAX_INTERESTS} interests.`;
+  if (draft.preferredLocations.length > MAX_PREFERRED_LOCATIONS) {
+    errors["profile-preferredLocations"] = `Keep it to ${MAX_PREFERRED_LOCATIONS} locations.`;
+  }
+  if (parseMinPay(draft.minPay) === "invalid") {
+    errors["profile-minPay"] = `Enter a whole number of dollars per year, up to ${MAX_MIN_PAY.toLocaleString("en-US")}, or leave it blank.`;
+  }
   return errors;
 }
 
-/** The profiles columns this form owns (preferences are saved separately in A-4). */
+/** The profiles columns this form owns, including job preferences (PROF-3). */
 export function toProfileUpdate(draft: ProfileDraft) {
   return {
     full_name: draft.fullName.trim(),
@@ -152,7 +211,27 @@ export function toProfileUpdate(draft: ProfileDraft) {
       .map((c) => ({ name: c.name.trim(), role: c.role.trim() || null })),
     skills: cleanList(draft.skills),
     interests: cleanList(draft.interests).slice(0, MAX_INTERESTS),
+    needs_sponsorship: draft.needsSponsorship,
+    open_to_relocation: draft.openToRelocation,
+    preferred_locations: uniqueIgnoringCase(cleanList(draft.preferredLocations)).slice(0, MAX_PREFERRED_LOCATIONS),
+    // validateDraft blocks "invalid" before saving; null here is only a safety net.
+    min_pay: toMinPayColumn(draft.minPay),
   };
+}
+
+function toMinPayColumn(raw: string): number | null {
+  const value = parseMinPay(raw);
+  return value === "invalid" ? null : value;
+}
+
+function uniqueIgnoringCase(items: string[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = item.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 /** New experiences rows (the database fills in id). */

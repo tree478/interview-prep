@@ -9,18 +9,20 @@ import { ProfileEditor } from "@/components/profile/profile-editor";
 import { draftFromRows, toExperienceInserts, toProfileUpdate, type ProfileDraft } from "@/components/profile/profile-draft";
 import { Button } from "@/components/ui/button";
 
-// Profile (PROF-1): the saved profile, every field editable.
-// A-4 adds job preferences (sponsorship, relocation, locations, minimum pay) here.
+// Profile (PROF-1, PROF-3): the saved profile and job preferences, every field editable.
+// Saving rescores the student's matches, so a preference change shows up in the feed.
 export default function ProfilePage() {
   const me = useApi(getMyProfile, []);
 
   async function handleSave(draft: ProfileDraft) {
+    // If this throws, ProfileEditor shows the error and keeps the student's edits.
     await saveMyProfile(toProfileUpdate(draft), (userId) => toExperienceInserts(draft, userId));
-    toast.success("Profile saved");
     try {
-      await refreshMatches();
+      const { updated } = await refreshMatches(); // POST /api/match: rescore every job
+      toast.success(`Profile saved. ${updated} ${updated === 1 ? "match" : "matches"} updated.`);
     } catch {
-      toast.warning("Match scores couldn't update yet. They'll refresh next time.");
+      // The profile is saved either way; only the rescoring failed.
+      toast.warning("Profile saved, but match scores couldn't update yet. Save again to retry.");
     }
     me.reload(); // re-read from the database so the form shows exactly what was stored
   }
@@ -41,6 +43,7 @@ export default function ProfilePage() {
           initial={draftFromRows(me.data.profile, me.data.experiences)}
           email={me.data.profile.email}
           onSave={handleSave}
+          showPreferences
         />
       )}
     </>

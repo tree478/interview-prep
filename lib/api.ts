@@ -19,20 +19,23 @@ import {
   feedItemSchema,
   gapsResponseSchema,
   interviewQuestionSchema,
-  parsedResumeSchema,
+  matchRefreshSchema,
+  okSchema,
   profileRowSchema,
+  resumeUploadSchema,
+  runIdSchema,
   starFeedbackSchema,
   tailorResultSchema,
   type RoleType,
   type Sponsorship,
   type Stage,
+  type TailorDecision,
 } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 
 import applicationsMock from "@/mocks/applications.json";
 import atsMock from "@/mocks/ats.json";
 import botRunsMock from "@/mocks/bot-runs.json";
-import feedMock from "@/mocks/feed.json";
 import gapsMock from "@/mocks/gaps.json";
 import interviewMock from "@/mocks/interview.json";
 import resumeMock from "@/mocks/resume.json";
@@ -41,19 +44,8 @@ import tailorMock from "@/mocks/tailor.json";
 // Mocks are on unless someone explicitly turns them off.
 export const USE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS !== "false";
 
-// Route response wrappers. These compose the shared schemas from lib/types.ts
-// into the exact response shapes listed in TASKS.md §2.
-// TODO(types): ask Miranda to move these into lib/types.ts
-// (resumeUploadSchema, okSchema, runIdSchema, matchRefreshSchema).
-const resumeUploadSchema = z.object({
-  resumeId: z.string(),
-  parsed: parsedResumeSchema,
-  ats: atsReportSchema,
-});
-
-const okSchema = z.object({ ok: z.literal(true) });
-const runIdSchema = z.object({ runId: z.string() });
-const matchRefreshSchema = z.object({ updated: z.number() });
+// Mock id for the bot buttons. lib/types.ts requires run ids to be UUIDs.
+const MOCK_RUN = { runId: "00000000-0000-4000-8000-0000000000b1" };
 
 /** Thrown when a request fails. `message` is safe to show to the user. */
 export class ApiError extends Error {
@@ -136,16 +128,11 @@ export function getFeed(filters: FeedFilters = {}) {
   }
   const qs = params.toString();
 
-  // In mock mode, apply the filters ourselves so the UI behaves realistically.
-  const mock = feedMock.filter(
-    ({ job }) =>
-      (!filters.location ||
-        (job.location ?? "").toLowerCase().includes(filters.location.toLowerCase())) &&
-      (!filters.sponsorship || job.sponsorship === filters.sponsorship) &&
-      (!filters.roleType || job.roleType === filters.roleType),
-  );
-
-  return call(z.array(feedItemSchema), `/api/feed${qs ? `?${qs}` : ""}`, { mock });
+  // Always real (live: true), even with mocks on: GET /api/feed is finished and
+  // returns FeedItem[] (same schema), already sorted with hard mismatches last.
+  // Saving the profile rescores through the real POST /api/match, so a mocked
+  // feed would never show the result (e.g. sponsorship hard-mismatch badges).
+  return call(z.array(feedItemSchema), `/api/feed${qs ? `?${qs}` : ""}`, { live: true });
 }
 
 /** Finds one job from the feed. There is no single-job route in the contract yet. */
@@ -189,7 +176,7 @@ export function tailor(jobId: string) {
 
 export function saveTailorDecisions(
   tailoringId: string,
-  decisions: { id: string; status: "accepted" | "rejected" }[],
+  decisions: TailorDecision[],
 ) {
   return call(okSchema, "/api/tailor", {
     method: "PATCH",
@@ -222,12 +209,12 @@ export function runScout() {
   return call(runIdSchema, "/api/ingest/run", {
     method: "POST",
     body: { trigger: "manual" },
-    mock: { runId: "run-mock" },
+    mock: MOCK_RUN,
   });
 }
 
 export function refreshCourses() {
-  return call(runIdSchema, "/api/ingest/courses", { method: "POST", mock: { runId: "run-mock" } });
+  return call(runIdSchema, "/api/ingest/courses", { method: "POST", mock: MOCK_RUN });
 }
 
 // ---------------------------------------------------------------- interview
@@ -332,6 +319,12 @@ export type ProfileUpdate = {
   clubs: { name: string; role: string | null }[];
   skills: string[];
   interests: string[];
+  // Job preferences (PROF-3). POST /api/match reads these; needs_sponsorship drives hard mismatches.
+  needs_sponsorship: boolean;
+  open_to_relocation: boolean;
+  preferred_locations: string[];
+  /** Minimum yearly pay in USD (lib/match/score.ts compares it with yearly posting pay). */
+  min_pay: number | null;
 };
 export type ExperienceInsert = {
   user_id: string;

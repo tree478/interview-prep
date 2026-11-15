@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import resumeMock from "../../mocks/resume.json"; // relative: vitest doesn't know the @/ alias
-import type { ParsedResume } from "@/lib/types";
+import type { ParsedResume, ProfileRow } from "@/lib/types";
 import {
   draftFromParsedResume,
   draftFromRows,
+  emptyDraft,
   emptyExperience,
+  MAX_MIN_PAY,
+  parseMinPay,
+  preferencesFromRow,
   monthToDate,
   toExperienceInserts,
   toMonthValue,
@@ -95,5 +99,114 @@ describe("validateDraft", () => {
     const exp = { ...emptyExperience(), company: "A", position: "B", start: "2026-05", end: "2025-01" };
     expect(validateDraft({ ...draftFromParsedResume(resumeMock.parsed as ParsedResume, "Sam"), experiences: [exp] }))
       .toEqual({ [`${exp.key}-end`]: "End date is before the start date." });
+  });
+});
+
+describe("job preferences (PROF-3)", () => {
+  const parsed = resumeMock.parsed as ParsedResume;
+  // A saved profile with every preference set, as the database returns it.
+  const savedRow: ProfileRow = {
+    user_id: "00000000-0000-4000-8000-000000000000",
+    full_name: "Sam Minuteman",
+    email: "sam@umass.edu",
+    year: "Junior",
+    majors: ["Computer Science"],
+    minors: [],
+    honors: [],
+    clubs: [],
+    skills: ["Python"],
+    interests: [],
+    needs_sponsorship: true,
+    open_to_relocation: true,
+    preferred_locations: ["Boston, MA", "Remote"],
+    min_pay: 60000,
+  };
+
+  describe("parseMinPay", () => {
+    it.each([
+      ["", null],
+      ["   ", null],
+      ["60000", 60000],
+      ["60,000", 60000],
+      ["$60,000", 60000],
+      [" 0 ", 0],
+      [String(MAX_MIN_PAY), MAX_MIN_PAY],
+    ])("%j -> %j", (raw, expected) => {
+      expect(parseMinPay(raw)).toBe(expected);
+    });
+
+    it.each(["-5", "60000.50", "60k", "abc", String(MAX_MIN_PAY + 1), "1e5"])("%j -> invalid", (raw) => {
+      expect(parseMinPay(raw)).toBe("invalid");
+    });
+  });
+
+  it("new drafts default to no preferences (nothing guessed)", () => {
+    for (const draft of [emptyDraft("Sam"), draftFromParsedResume(parsed, "Sam")]) {
+      expect(draft).toMatchObject({ needsSponsorship: false, openToRelocation: false, preferredLocations: [], minPay: "" });
+    }
+  });
+
+  it("reads preferences from the database row", () => {
+    expect(draftFromRows(savedRow, [])).toMatchObject({
+      needsSponsorship: true,
+      openToRelocation: true,
+      preferredLocations: ["Boston, MA", "Remote"],
+      minPay: "60000",
+    });
+    expect(preferencesFromRow({ ...savedRow, min_pay: null }).minPay).toBe("");
+  });
+
+  it("writes all four columns, converting pay and cleaning locations", () => {
+    const draft = {
+      ...draftFromRows(savedRow, []),
+      preferredLocations: [" Boston, MA ", "boston, ma", "", "Remote"],
+      minPay: "$75,000",
+    };
+    expect(toProfileUpdate(draft)).toMatchObject({
+      needs_sponsorship: true,
+      open_to_relocation: true,
+      preferred_locations: ["Boston, MA", "Remote"], // trimmed, blank dropped, case-insensitive duplicate dropped
+      min_pay: 75000,
+    });
+    expect(toProfileUpdate({ ...draft, minPay: "" }).min_pay).toBeNull();
+  });
+
+  it("round-trips: row -> draft -> row keeps every preference", () => {
+    const update = toProfileUpdate(draftFromRows(savedRow, []));
+    expect(update).toMatchObject({
+      needs_sponsorship: savedRow.needs_sponsorship,
+      open_to_relocation: savedRow.open_to_relocation,
+      preferred_locations: savedRow.preferred_locations,
+      min_pay: savedRow.min_pay,
+    });
+  });
+
+  it("re-uploading a résumé keeps the saved preferences", () => {
+    const saved = preferencesFromRow(savedRow);
+    const fromResume = draftFromParsedResume(parsed, savedRow.full_name, saved);
+    const manual = emptyDraft(savedRow.full_name, saved);
+
+    for (const draft of [fromResume, manual]) {
+      expect(toProfileUpdate(draft)).toMatchObject({
+        needs_sponsorship: true,
+        open_to_relocation: true,
+        preferred_locations: ["Boston, MA", "Remote"],
+        min_pay: 60000,
+      });
+    }
+    // ...while the résumé fields still come from the new résumé.
+    expect(fromResume.majors).toEqual(parsed.academics.majors);
+    expect(fromResume.experiences).toHaveLength(parsed.experiences.length);
+  });
+
+  it("validates minimum pay and location count, with errors on the field ids", () => {
+    const base = draftFromRows(savedRow, []);
+    expect(validateDraft(base)).toEqual({});
+    expect(validateDraft({ ...base, minPay: "" })).toEqual({});
+    expect(validateDraft({ ...base, minPay: "-1" })["profile-minPay"]).toMatch(/whole number/);
+    expect(validateDraft({ ...base, minPay: "lots" })["profile-minPay"]).toBeDefined();
+
+    const eleven = Array.from({ length: 11 }, (_, i) => `City ${i}`);
+    expect(validateDraft({ ...base, preferredLocations: eleven })["profile-preferredLocations"]).toMatch(/10 locations/);
   });
 });

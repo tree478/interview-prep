@@ -6,10 +6,13 @@ import { FormAlert } from "@/components/auth/form-alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { ExperienceFields } from "./experience-fields";
 import {
   emptyExperience,
   MAX_INTERESTS,
+  MAX_PREFERRED_LOCATIONS,
   newKey,
   SKILLS_SHOWN_BEFORE_EXPAND,
   validateDraft,
@@ -30,12 +33,15 @@ export function ProfileEditor({
   onSave,
   saveLabel = "Save profile",
   savingLabel = "Saving…",
+  showPreferences = false,
 }: {
   initial: ProfileDraft;
   email?: string;
   onSave: (draft: ProfileDraft) => Promise<void>;
   saveLabel?: string;
   savingLabel?: string;
+  /** Show the "Job preferences" card (profile page). Onboarding leaves it off to stay short. */
+  showPreferences?: boolean;
 }) {
   const [draft, setDraft] = useState<ProfileDraft>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -129,6 +135,53 @@ export function ProfileEditor({
         </CardContent>
       </Card>
 
+      {showPreferences && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Job preferences</CardTitle>
+            <CardDescription>
+              These change how jobs are flagged and checked. They never hide a job from your feed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-5">
+            <PreferenceToggle
+              id="profile-needsSponsorship"
+              label="I need visa sponsorship"
+              hint="We flag jobs that say they don't sponsor as a hard mismatch and cap their score at 40%."
+              checked={draft.needsSponsorship}
+              onChange={(v) => set("needsSponsorship", v)}
+            />
+            <PreferenceToggle
+              id="profile-openToRelocation"
+              label="I'm open to relocating"
+              hint="When on, every job passes the location check, wherever it is."
+              checked={draft.openToRelocation}
+              onChange={(v) => set("openToRelocation", v)}
+            />
+            <TagInput
+              id="profile-preferredLocations"
+              label="Preferred locations"
+              values={draft.preferredLocations}
+              onChange={(v) => set("preferredLocations", v)}
+              max={MAX_PREFERRED_LOCATIONS}
+              error={errors["profile-preferredLocations"]}
+              placeholder="e.g. Boston, MA or Remote"
+              hint="Jobs in these places pass the location check. Remote jobs always pass."
+            />
+            <FormField
+              id="profile-minPay"
+              label="Minimum pay (USD per year)"
+              inputMode="numeric"
+              placeholder="e.g. 60,000"
+              value={draft.minPay}
+              error={errors["profile-minPay"]}
+              onChange={(e) => set("minPay", e.target.value)}
+              hint="Compared with a posting's stated pay (hourly × 2,080, monthly × 12). Postings that don't state pay are never hidden."
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Sticky so Save is always reachable on a long form. */}
       <div className="sticky bottom-0 -mx-1 flex flex-col gap-2 border-t bg-background/95 px-1 py-3 backdrop-blur">
         {saveError && <FormAlert message={saveError} />}
@@ -140,6 +193,22 @@ export function ProfileEditor({
         </Button>
       </div>
     </form>
+  );
+}
+
+// A labeled on/off switch with a helper line. The Switch is a <button role="switch">,
+// so Tab focuses it and Space/Enter toggles it; clicking the label toggles it too.
+function PreferenceToggle({
+  id, label, hint, checked, onChange,
+}: { id: string; label: string; hint: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-1">
+        <Label htmlFor={id} className="text-sm">{label}</Label>
+        <p id={`${id}-hint`} className="text-xs text-muted-foreground">{hint}</p>
+      </div>
+      <Switch id={id} checked={checked} onCheckedChange={onChange} aria-describedby={`${id}-hint`} className="mt-0.5" />
+    </div>
   );
 }
 
