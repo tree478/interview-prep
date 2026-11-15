@@ -7,6 +7,8 @@ import type { Application, Stage } from "@/lib/types";
 import { useApi } from "@/components/use-api";
 import { ErrorMessage, LoadingCards, PageHeader } from "@/components/page-state";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const STAGES: { id: Stage; label: string }[] = [
   { id: "saved", label: "Saved" },
@@ -23,7 +25,7 @@ function byDeadline(a: Application, b: Application) {
   return a.deadline.localeCompare(b.deadline); // ISO dates sort correctly as strings
 }
 
-// Application tracker (TRACK-1/2/3). A-7 adds the deadline date picker.
+// Application tracker (TRACK-1/2/3/5).
 export default function TrackerPage() {
   const apps = useApi(getApplications, []);
 
@@ -40,12 +42,40 @@ export default function TrackerPage() {
     }
   }
 
+  async function changeDeadline(app: Application, value: string) {
+    if (apps.status !== "success") return;
+    const previous = apps.data;
+    const deadline = value === "" ? null : value;
+    apps.setData(
+      previous.map((a) =>
+        a.id === app.id
+          ? { ...a, deadline, deadlineSource: deadline ? "user" : null }
+          : a,
+      ),
+    );
+    try {
+      await updateApplication({ id: app.id, deadline });
+    } catch (err) {
+      apps.setData(previous);
+      toast.error(err instanceof Error ? err.message : "Could not update deadline");
+    }
+  }
+
   return (
     <>
       <PageHeader title="Application tracker" description="Every application by stage, soonest deadline first." />
       {apps.status === "loading" && <LoadingCards count={2} />}
       {apps.status === "error" && <ErrorMessage message={apps.error} onRetry={apps.reload} />}
-      {apps.status === "success" && (
+      {apps.status === "success" && apps.data.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          No applications yet. Add a job from the{" "}
+          <Link href="/dashboard" className="underline underline-offset-4">
+            feed
+          </Link>
+          .
+        </p>
+      )}
+      {apps.status === "success" && apps.data.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {STAGES.map((stage) => {
             const cards = apps.data.filter((a) => a.stage === stage.id).sort(byDeadline);
@@ -67,6 +97,15 @@ export default function TrackerPage() {
                       <p className={app.deadline ? undefined : "text-muted-foreground"}>
                         {app.deadline ? `Due ${app.deadline}` : "No deadline"}
                       </p>
+                      <div className="flex flex-col gap-1">
+                        <Label htmlFor={`deadline-${app.id}`}>Deadline</Label>
+                        <Input
+                          id={`deadline-${app.id}`}
+                          type="date"
+                          value={app.deadline ?? ""}
+                          onChange={(event) => changeDeadline(app, event.target.value)}
+                        />
+                      </div>
                       <label className="sr-only" htmlFor={`stage-${app.id}`}>Stage</label>
                       <select
                         id={`stage-${app.id}`}
