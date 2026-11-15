@@ -231,6 +231,53 @@ describe("tailorBullets", () => {
     expect(prompt).toContain(
       "Do not add a skill, tool, employer, or number that is not already in that bullet.",
     );
+    expect(prompt).toContain(
+      "Return rewrites for up to 3 existing bullets that best fit this posting. Put the best fit first.",
+    );
+    expect(prompt).toContain(
+      "A bullet that already matches the posting can still be rephrased to use the posting's wording.",
+    );
+    expect(prompt).toContain(
+      "Omit a bullet only when it cannot be rephrased without adding a skill, employer, or number.",
+    );
+    expect(prompt).not.toContain("Omit a bullet that has nothing to emphasize.");
+  });
+
+  it("keeps only the first 3 bullets the model rewrote", async () => {
+    const { calls, call } = scripted([
+      {
+        rewrites: [
+          { id: "0:0", after: "Built a Python API that the lab uses" },
+          { id: "0:1", after: "Led the student club on campus" },
+          { id: "1:0", after: "Wrote tests for the Python service the team runs" },
+          { id: "1:1", after: "Documented the Python service so new members can use it" },
+        ],
+      },
+    ]);
+
+    const result = await tailorBullets(
+      tailorInput([
+        bullet({ id: "0:0", before: "Built a Python API for the lab" }),
+        bullet({ id: "0:1", bulletIndex: 1, before: "Led the club" }),
+        bullet({
+          id: "1:0",
+          experienceIndex: 1,
+          before: "Wrote tests for the Python service",
+        }),
+        bullet({
+          id: "1:1",
+          experienceIndex: 1,
+          bulletIndex: 1,
+          before: "Documented the Python service for new members",
+        }),
+      ]),
+      call,
+    );
+
+    expect(calls).toHaveLength(1);
+    expect(result.blocked).toEqual([]);
+    expect(result.rejectedCount).toBe(0);
+    expect(result.diffs.map((diff) => diff.id)).toEqual(["0:0", "0:1", "1:0"]);
   });
 
   it("blocks a 40% fabrication after the retry still adds 40%", async () => {
@@ -346,6 +393,51 @@ describe("tailorBullets", () => {
     ]);
     expect(calls[1]?.prompt).toContain("added skill: Python");
     expect(calls[1]?.prompt).toContain("Built a Python API for the lab");
+  });
+
+  it("still rejects a rewrite that adds a number and one that adds a skill", async () => {
+    const { calls, call } = scripted([
+      {
+        rewrites: [
+          { id: "0:0", after: "Increased sales by 40% across the region" },
+          { id: "1:0", after: "Built a Python API for the lab" },
+        ],
+      },
+      {
+        rewrites: [
+          { id: "0:0", after: "Increased sales by 40% across the region" },
+          { id: "1:0", after: "Built a Python API for the lab" },
+        ],
+      },
+    ]);
+
+    const result = await tailorBullets(
+      tailorInput([
+        bullet({ id: "0:0", before: "Increased sales across the region" }),
+        bullet({
+          id: "1:0",
+          experienceIndex: 1,
+          before: "Built an API for the lab",
+        }),
+      ]),
+      call,
+    );
+
+    expect(calls).toHaveLength(2);
+    expect(result.diffs).toEqual([]);
+    expect(result.blocked).toEqual([
+      {
+        before: "Increased sales across the region",
+        attempted: "Increased sales by 40% across the region",
+        reason: "added number: 40%",
+      },
+      {
+        before: "Built an API for the lab",
+        attempted: "Built a Python API for the lab",
+        reason: "added skill: Python",
+      },
+    ]);
+    expect(result.rejectedCount).toBe(2);
   });
 
   it("blocks a skill that exists on another bullet but not this one", async () => {
