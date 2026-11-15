@@ -1,19 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { use, useState } from "react";
-import { getAts, getFeedItem, getGaps, tailor } from "@/lib/api";
-import type { TailorResult } from "@/lib/types";
+import { use, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { getAts, getFeedItem, getGaps, getLatestTailoring, saveTailorDecisions, tailor } from "@/lib/api";
+import type { BulletDiff, TailorResult } from "@/lib/types";
 import { useApi } from "@/components/use-api";
+import { BulletDiffView } from "@/components/bullet-diff";
 import { ErrorMessage, LoadingCards } from "@/components/page-state";
 import { MatchReasons, ScoreBadge } from "@/components/match-summary";
 import { AddToTrackerButton } from "@/components/add-to-tracker-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Job detail (A-6): score, gap plan, ATS check, tailoring.
-// A-1 version: renders each panel from mocks. A-6 adds word-level diff
-// highlighting and saving accept/reject decisions.
+// Job detail (A-6): score, gap plan, ATS check, and a per-bullet tailoring diff.
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params); // In Next 16, params is a Promise.
   const item = useApi(() => getFeedItem(id), [id]);
@@ -152,21 +152,80 @@ function AtsPanel({ jobId }: { jobId: string }) {
 }
 
 function TailorPanel({ jobId }: { jobId: string }) {
-  // This one waits for a button click, so it doesn't use useApi.
   const [result, setResult] = useState<TailorResult | null>(null);
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [error, setError] = useState("");
+  const [phase, setPhase] = useState<"loading" | "ready" | "error">("loading");
+  const [loadError, setLoadError] = useState("");
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [runError, setRunError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setPhase("loading");
+    setRunError("");
+    setSaveError("");
+    getLatestTailoring(jobId).then(
+      (saved) => {
+        if (cancelled) return;
+        setResult(saved);
+        setPhase("ready");
+      },
+      (err: unknown) => {
+        if (cancelled) return;
+        setResult(null);
+        setLoadError(err instanceof Error ? err.message : String(err));
+        setPhase("error");
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [jobId, loadAttempt]);
 
   async function run() {
-    setStatus("loading");
+    setRunning(true);
+    setRunError("");
+    setSaveError("");
     try {
       setResult(await tailor(jobId));
-      setStatus("idle");
+      setPhase("ready");
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setStatus("error");
+      setRunError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRunning(false);
     }
   }
+
+  function choose(id: string, status: "accepted" | "rejected") {
+    setResult((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        diffs: current.diffs.map((diff) => (diff.id === id ? { ...diff, status } : diff)),
+      };
+    });
+  }
+
+  async function save() {
+    if (!result || saving) return;
+    const decisions = decided(result.diffs);
+    if (decisions.length === 0) return;
+    setSaving(true);
+    setSaveError("");
+    try {
+      await saveTailorDecisions(result.tailoringId, decisions, { jobId, result });
+      toast.success("Saved tailoring decisions");
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const blockedCount = result ? (result.blocked.length > 0 ? result.blocked.length : result.rejectedCount) : 0;
+  const allProposed = !result || result.diffs.every((diff) => diff.status === "proposed");
 
   return (
     <Card>
@@ -174,40 +233,85 @@ function TailorPanel({ jobId }: { jobId: string }) {
         <CardTitle>Tailor your resume</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-sm">
-        {!result && (
-          <Button onClick={run} disabled={status === "loading"} className="w-fit">
-            {status === "loading" ? "Rewriting bullets…" : "Tailor bullets for this job"}
+        {phase === "loading" && <LoadingCards count={2} />}
+        {phase === "error" && (
+          <ErrorMessage message={loadError} onRetry={() => setLoadAttempt((n) => n + 1)} />
+        )}
+        {phase === "ready" && !result && (
+          <Button type="button" onClick={run} disabled={running} className="w-fit">
+            {running ? "Rewriting bullets…" : "Tailor bullets for this job"}
           </Button>
         )}
-        {status === "error" && <ErrorMessage message={error} onRetry={run} />}
-        {result && (
+        {phase === "ready" && result && (
           <>
+            {blockedCount > 0 && (
+              <details className="rounded-lg border border-amber-500/40 p-3">
+                <summary className="cursor-pointer font-medium">
+                  {blockedCount} {blockedCount === 1 ? "rewrite" : "rewrites"} blocked
+                </summary>
+                {result.blocked.length > 0 && (
+                  <ul className="mt-2 flex flex-col gap-2">
+                    {result.blocked.map((blocked) => (
+                      <li key={blocked.attempted}>
+                        <p className="text-muted-foreground">{blocked.attempted}</p>
+                        <p className="font-medium">{blocked.reason}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </details>
+            )}
             <ul className="flex flex-col gap-3">
-              {result.diffs.map((d) => (
-                <li key={d.id} className="rounded-lg border p-3">
-                  <p className="text-muted-foreground line-through">{d.before}</p>
-                  <p className="mt-1">{d.after}</p>
+              {result.diffs.map((diff) => (
+                <li key={diff.id} className="rounded-lg border p-3">
+                  <BulletDiffView before={diff.before} after={diff.after} />
+                  <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Decision for this bullet">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={diff.status === "accepted" ? "default" : "outline"}
+                      aria-pressed={diff.status === "accepted"}
+                      disabled={saving || running}
+                      onClick={() => choose(diff.id, "accepted")}
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={diff.status === "rejected" ? "default" : "outline"}
+                      aria-pressed={diff.status === "rejected"}
+                      disabled={saving || running}
+                      onClick={() => choose(diff.id, "rejected")}
+                    >
+                      Reject
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
-            {result.blocked.length > 0 && (
-              <details className="rounded-lg border border-amber-500/40 p-3">
-                <summary className="cursor-pointer font-medium">
-                  {result.blocked.length} rewrite{result.blocked.length === 1 ? "" : "s"} blocked
-                </summary>
-                <ul className="mt-2 flex flex-col gap-2">
-                  {result.blocked.map((b) => (
-                    <li key={b.attempted}>
-                      <p className="text-muted-foreground">{b.attempted}</p>
-                      <p className="font-medium">{b.reason}</p>
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
+            <Button
+              type="button"
+              onClick={save}
+              disabled={allProposed || saving || running}
+              className="w-fit"
+            >
+              {saving ? "Saving…" : "Save"}
+            </Button>
+            {saveError && <ErrorMessage message={saveError} onRetry={save} />}
+            <Button type="button" variant="outline" onClick={run} disabled={running || saving} className="w-fit">
+              {running ? "Rewriting bullets…" : "Tailor bullets for this job"}
+            </Button>
           </>
         )}
+        {phase === "ready" && runError && <ErrorMessage message={runError} onRetry={run} />}
       </CardContent>
     </Card>
+  );
+}
+
+function decided(diffs: BulletDiff[]): { id: string; status: "accepted" | "rejected" }[] {
+  return diffs.flatMap((diff) =>
+    diff.status === "proposed" ? [] : [{ id: diff.id, status: diff.status }],
   );
 }
