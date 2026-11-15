@@ -288,3 +288,31 @@ export async function PATCH(request: Request): Promise<Response> {
     return jsonError("Could not update application", 500);
   }
 }
+
+const deleteBodySchema = z.object({
+  id: z.uuid(),
+});
+
+export async function DELETE(request: Request): Promise<Response> {
+  try {
+    const auth = await requireUser();
+    if (auth instanceof Response) return auth;
+
+    const body = await readBody(request, deleteBodySchema);
+    if (body instanceof Response) return body;
+
+    const { data: removed, error } = await auth.supabase
+      .from("applications")
+      .delete()
+      .eq("id", body.id)
+      .eq("user_id", auth.userId)
+      .select("id")
+      .maybeSingle();
+    if (error) return jsonError("Could not delete application", 500);
+    if (!removed) return jsonError("Application not found", 404);
+
+    return Response.json(okSchema.parse({ ok: true }));
+  } catch {
+    return jsonError("Could not delete application", 500);
+  }
+}

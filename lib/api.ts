@@ -71,8 +71,8 @@ async function call<T>(
   schema: z.ZodType<T>,
   path: string,
   options:
-    | { method?: "GET" | "POST" | "PATCH"; body?: unknown; mock: unknown; live?: false }
-    | { method?: "GET" | "POST" | "PATCH"; body?: unknown; live: true },
+    | { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown; mock: unknown; live?: false }
+    | { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown; live: true },
 ): Promise<T> {
   if (USE_MOCKS && !options.live) {
     await sleep(MOCK_DELAY_MS);
@@ -288,6 +288,10 @@ export function addApplication(jobId: string) {
 
 export function updateApplication(update: { id: string; stage?: Stage; deadline?: string | null }) {
   return call(okSchema, "/api/applications", { method: "PATCH", body: update, live: true });
+}
+
+export function deleteApplication(id: string) {
+  return call(okSchema, "/api/applications", { method: "DELETE", body: { id }, live: true });
 }
 
 // ---------------------------------------------------------------- bot activity
