@@ -40,7 +40,6 @@ import atsMock from "@/mocks/ats.json";
 import botRunsMock from "@/mocks/bot-runs.json";
 import feedMock from "@/mocks/feed.json";
 import gapsMock from "@/mocks/gaps.json";
-import interviewMock from "@/mocks/interview.json";
 import resumeMock from "@/mocks/resume.json";
 import tailorMock from "@/mocks/tailor.json";
 
@@ -391,11 +390,13 @@ export function refreshCourses() {
 
 // ---------------------------------------------------------------- interview
 
+// Always real (live: true), even with mocks on: POST /api/interview is finished
+// and returns InterviewQuestion[] / StarFeedback (same schemas as the mocks).
 export function getInterviewQuestions(jobId: string) {
   return call(z.array(interviewQuestionSchema), "/api/interview", {
     method: "POST",
     body: { jobId, action: "questions" },
-    mock: interviewMock.questions,
+    live: true,
   });
 }
 
@@ -403,7 +404,7 @@ export function gradeAnswer(jobId: string, questionId: string, question: string,
   return call(starFeedbackSchema, "/api/interview", {
     method: "POST",
     body: { jobId, action: "grade", questionId, question, answer },
-    mock: interviewMock.feedback,
+    live: true,
   });
 }
 
